@@ -1,0 +1,98 @@
+D:\Projects\Job Board\Job Board\bin\Debug\net10.0\appsettings.Development.json
+D:\Projects\Job Board\Job Board\bin\Debug\net10.0\appsettings.json
+D:\Projects\Job Board\Job Board\bin\Debug\net10.0\Job Board.staticwebassets.runtime.json
+D:\Projects\Job Board\Job Board\bin\Debug\net10.0\Job Board.staticwebassets.endpoints.json
+D:\Projects\Job Board\Job Board\bin\Debug\net10.0\Job Board.exe
+D:\Projects\Job Board\Job Board\bin\Debug\net10.0\Job Board.deps.json
+D:\Projects\Job Board\Job Board\bin\Debug\net10.0\Job Board.runtimeconfig.json
+D:\Projects\Job Board\Job Board\bin\Debug\net10.0\Job Board.dll
+D:\Projects\Job Board\Job Board\bin\Debug\net10.0\Job Board.pdb
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\rpswa.dswa.cache.json
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\Job Board.GeneratedMSBuildEditorConfig.editorconfig
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\Job Board.AssemblyInfoInputs.cache
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\Job Board.AssemblyInfo.cs
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\Job Board.csproj.CoreCompileInputs.cache
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\Job Board.MvcApplicationPartsAssemblyInfo.cache
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\Job Board.RazorAssemblyInfo.cache
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\Job Board.RazorAssemblyInfo.cs
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\rjimswa.dswa.cache.json
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\scopedcss\Pages\Shared\_Layout.cshtml.rz.scp.css
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\scopedcss\bundle\Job Board.styles.css
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\scopedcss\projectbundle\Job Board.bundle.scp.css
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\hdh5qawyqz-{0}-b9sayid5wm-b9sayid5wm.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\1k47pwtkam-{0}-61n19gt1b8-61n19gt1b8.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\si4y48ruti-{0}-xtxxf3hu2r-xtxxf3hu2r.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\slxzq4wcmo-{0}-bqjiyaj88i-bqjiyaj88i.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\39gyv9q7fs-{0}-c2jlpeoesf-c2jlpeoesf.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\qovvtft34r-{0}-erw9l3u2r3-erw9l3u2r3.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\0e3awb282p-{0}-aexeepp0ev-aexeepp0ev.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\sbmoxwinxw-{0}-d7shbmvgxk-d7shbmvgxk.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\228kwgpg2x-{0}-ausgxo2sd3-ausgxo2sd3.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\yzjqmbwbpu-{0}-k8d9w2qqmf-k8d9w2qqmf.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\x89myzrmpp-{0}-cosvhxvwiu-cosvhxvwiu.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\crh0a1wwrc-{0}-ub07r2b239-ub07r2b239.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\ll8porcf7c-{0}-fvhpjtyr6v-fvhpjtyr6v.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\eqo8krljc1-{0}-b7pk76d08c-b7pk76d08c.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\90fr9umd4y-{0}-fsbi9cje9m-fsbi9cje9m.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\bku1wapdvd-{0}-rzd6atqjts-rzd6atqjts.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\8o86vjrynv-{0}-ee0r1s7dh0-ee0r1s7dh0.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\0qx4vvhrfh-{0}-dxx9fxp4il-dxx9fxp4il.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\2lvno5fs57-{0}-jd9uben2k1-jd9uben2k1.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\tk4h1te4tl-{0}-khv3u5hwcm-khv3u5hwcm.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\afl2x2yhsa-{0}-r4e9w2rdcm-r4e9w2rdcm.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\h3nbmjju9u-{0}-lcd1t2u6c8-lcd1t2u6c8.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\dc2b372dug-{0}-c2oey78nd0-c2oey78nd0.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\6kmraey4hp-{0}-tdbxkamptv-tdbxkamptv.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\253cgajpyf-{0}-j5mq2jizvt-j5mq2jizvt.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\4y474ujh4p-{0}-06098lyss8-06098lyss8.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\v4bgow38e3-{0}-nvvlpmu67g-nvvlpmu67g.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\fqbi2zyhrx-{0}-s35ty4nyc5-s35ty4nyc5.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\k07mglee8y-{0}-pj5nd1wqec-pj5nd1wqec.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\56wtznjt3n-{0}-46ein0sx1k-46ein0sx1k.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\l9q3dowtf6-{0}-v0zj4ognzu-v0zj4ognzu.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\4eshogeptq-{0}-37tfw0ft22-37tfw0ft22.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\czk4ptlkj4-{0}-hrwsygsryq-hrwsygsryq.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\pc3hp1fhje-{0}-pk9g2wxc8p-pk9g2wxc8p.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\rda4b15h8n-{0}-ft3s53vfgj-ft3s53vfgj.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\g4wlkfv1xd-{0}-6cfz1n2cew-6cfz1n2cew.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\qf1vddmwre-{0}-6pdc2jztkx-6pdc2jztkx.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\wjglxddbef-{0}-493y06b0oq-493y06b0oq.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\p3vbajs3yp-{0}-iovd86k7lj-iovd86k7lj.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\7blkfbtbxx-{0}-vr1egmr9el-vr1egmr9el.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\z8jmg3c9nj-{0}-kbrnm935zg-kbrnm935zg.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\yvlhmlz0je-{0}-jj8uyg4cgr-jj8uyg4cgr.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\sqjy9waq53-{0}-y7v9cxd14o-y7v9cxd14o.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\e12k5fqr1g-{0}-notf2xhcfb-notf2xhcfb.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\x2kncs2dc8-{0}-h1s4sie4z3-h1s4sie4z3.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\br9615j6pq-{0}-63fj8s7r0e-63fj8s7r0e.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\kcuweub8np-{0}-0j3bgjxly4-0j3bgjxly4.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\vw32rkvgoy-{0}-47otxtyo56-47otxtyo56.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\7cwrf3v9av-{0}-4v8eqarkd7-4v8eqarkd7.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\5zmqkwtspa-{0}-356vix0kms-356vix0kms.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\k18eyj5vyk-{0}-83jwlth58m-83jwlth58m.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\s1hsw9tr5t-{0}-mrlpezrjn3-mrlpezrjn3.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\jd0tl4eg93-{0}-lzl9nlhx6b-lzl9nlhx6b.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\eievbbf7lo-{0}-ag7o75518u-ag7o75518u.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\f5hwjdiql5-{0}-x0q3zqp4vz-x0q3zqp4vz.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\1ho4pap6py-{0}-0i3buxo5is-0i3buxo5is.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\y14xuzdpr5-{0}-o1o13a6vjx-o1o13a6vjx.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\qi3hkmhzh3-{0}-ttgo8qnofa-ttgo8qnofa.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\pkcj0z8snr-{0}-2z0ns9nrw6-2z0ns9nrw6.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\ddzkq5av7u-{0}-muycvpuwrr-muycvpuwrr.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\dalglo6oij-{0}-87fc7y1x7t-87fc7y1x7t.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\x3dc61lz6n-{0}-mlv21k5csn-mlv21k5csn.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\xia71zs3ir-{0}-gk655qyue2-gk655qyue2.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\compressed\wrt12hpj0y-{0}-gk655qyue2-gk655qyue2.gz
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\staticwebassets.build.json
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\staticwebassets.build.json.cache
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\staticwebassets.development.json
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\staticwebassets.build.endpoints.json
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\swae.build.ex.cache
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\Job Board.dll
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\refint\Job Board.dll
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\Job Board.pdb
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\Job Board.genruntimeconfig.cache
+D:\Projects\Job Board\Job Board\obj\Debug\net10.0\ref\Job Board.dll
