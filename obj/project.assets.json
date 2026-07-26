@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Projects\\Job Board\\Job Board\\Job Board.csproj",
+      "projectUniqueName": "D:\\Projects\\jobboard-aspnetcore\\Job Board.csproj",
       "projectName": "Job Board",
-      "projectPath": "D:\\Projects\\Job Board\\Job Board\\Job Board.csproj",
+      "projectPath": "D:\\Projects\\jobboard-aspnetcore\\Job Board.csproj",
       "packagesPath": "C:\\Users\\HORIZON\\.nuget\\packages\\",
-      "outputPath": "D:\\Projects\\Job Board\\Job Board\\obj\\",
+      "outputPath": "D:\\Projects\\jobboard-aspnetcore\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
