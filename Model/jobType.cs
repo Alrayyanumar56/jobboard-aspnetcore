@@ -4,6 +4,7 @@
     {
         contract,
         fullTime,
-        partTime
+        partTime,
+        remote
     }
 }

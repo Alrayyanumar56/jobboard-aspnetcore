@@ -1,25 +1,26 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Job_Board.Model
 {
-    public class job
+    public class Job
     {
         public int jobID { set; get; }
         [Required]
         [MaxLength (100,ErrorMessage ="Title Should be less than 100 characters")]
-        public string jobTitle { set; get; }
+        public string Title { set; get; }
         [Required]
-        [MaxLength (100,ErrorMessage ="Description Should be less than 5000 characters")]
-        public string jobDescription { set; get; }
+        [MaxLength (5000,ErrorMessage ="Description Should be less than 5000 characters")]
+        public string Description { set; get; }
         [Required]
-        public bool activeStatus { set; get; }
+        public string Location { set; get; }
         [Required]
-        public jobType? jobType { set; get; }
+        [NotNull]
+        public string salaryRange { set; get; }
         [Required]
-        public DateTimeOffset openingDate { set; get; }
-
-
-
-
+        public jobType? JobType { set; get; }
+        [Required]
+        public DateTimeOffset PostingDate { set; get; }
+        
     };
 }
