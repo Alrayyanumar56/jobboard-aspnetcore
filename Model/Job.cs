@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Job_Board.Model
@@ -15,12 +16,13 @@ namespace Job_Board.Model
         [Required]
         public string Location { set; get; }
         [Required]
-        [NotNull]
-        public string salaryRange { set; get; }
+        [AllowNull]
+        public string SalaryRange { set; get; }
         [Required]
         public jobType? JobType { set; get; }
         [Required]
         public DateTimeOffset PostingDate { set; get; }
+        public int EmployerID { set; get; }
         
     };
 }
