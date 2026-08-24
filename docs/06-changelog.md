@@ -3,8 +3,8 @@
 This is the file to check FIRST when sitting down after any gap of more than a couple days — answers "where did I leave off" without needing to re-read every file.
 
 ## Phase 1 checklist
-- [ ] GitHub repo created and pushed
-- [ ] Domain model reasoning done in `02-domain-model.md` (open questions answered, not left blank)
+- [Done] GitHub repo created and pushed
+- [Done] Domain model reasoning done in `02-domain-model.md` (open questions answered, not left blank)
 - [ ] `ApplicationUser` extended, roles set up (Employer, JobSeeker)
 - [ ] Registration flow lets user pick a role
 - [ ] `Job` model created and reasoned through
@@ -27,8 +27,9 @@ This is the file to check FIRST when sitting down after any gap of more than a c
 ## Session log
 (One short entry per real coding session — what I did, what I got stuck on, what I learned. Not a diary, just a breadcrumb trail.)
 
-### [Date]
-- Did:
-- Stuck on:
-- Resolved by:
-- Concept learned:
+### [2-Aug-2026]
+- Did: Paused Job model build**
+- Stuck on: **Asp.net Core Identity**
+- Resolved by: going to watch **65-68, 77, 78, 82** for Identity before creating **ApplicationUser**.
+- Concept learned: **Asp.net Core Identity and Application User Concept**
+

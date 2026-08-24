@@ -15,14 +15,12 @@ namespace Job_Board.Model
         public string Description { set; get; }
         [Required]
         public string Location { set; get; }
-        [Required]
-        [AllowNull]
-        public string SalaryRange { set; get; }
+        public string? SalaryRange { set; get; }
         [Required]
         public jobType? JobType { set; get; }
         [Required]
         public DateTimeOffset PostingDate { set; get; }
-        public int EmployerID { set; get; }
+        public string EmployerID { set; get; }
         
     };
 }
