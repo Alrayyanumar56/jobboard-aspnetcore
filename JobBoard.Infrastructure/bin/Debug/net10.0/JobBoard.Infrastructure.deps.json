@@ -1,0 +1,56 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "JobBoard.Infrastructure/1.0.0": {
+        "dependencies": {
+          "JobBoard.Application": "1.0.0",
+          "JobBoard.Domain": "1.0.0"
+        },
+        "runtime": {
+          "JobBoard.Infrastructure.dll": {}
+        }
+      },
+      "JobBoard.Application/1.0.0": {
+        "dependencies": {
+          "JobBoard.Domain": "1.0.0"
+        },
+        "runtime": {
+          "JobBoard.Application.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "JobBoard.Domain/1.0.0": {
+        "runtime": {
+          "JobBoard.Domain.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "JobBoard.Infrastructure/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "JobBoard.Application/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "JobBoard.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

@@ -1,0 +1,15 @@
+G:\Projects\JobBoard.Application\bin\Debug\net10.0\JobBoard.Application.deps.json
+G:\Projects\JobBoard.Application\bin\Debug\net10.0\JobBoard.Application.dll
+G:\Projects\JobBoard.Application\bin\Debug\net10.0\JobBoard.Application.pdb
+G:\Projects\JobBoard.Application\bin\Debug\net10.0\JobBoard.Domain.dll
+G:\Projects\JobBoard.Application\bin\Debug\net10.0\JobBoard.Domain.pdb
+G:\Projects\JobBoard.Application\obj\Debug\net10.0\JobBoard.Application.csproj.AssemblyReference.cache
+G:\Projects\JobBoard.Application\obj\Debug\net10.0\JobBoard.Application.GeneratedMSBuildEditorConfig.editorconfig
+G:\Projects\JobBoard.Application\obj\Debug\net10.0\JobBoard.Application.AssemblyInfoInputs.cache
+G:\Projects\JobBoard.Application\obj\Debug\net10.0\JobBoard.Application.AssemblyInfo.cs
+G:\Projects\JobBoard.Application\obj\Debug\net10.0\JobBoard.Application.csproj.CoreCompileInputs.cache
+G:\Projects\JobBoard.Application\obj\Debug\net10.0\JobBoard.93A6DEA3.Up2Date
+G:\Projects\JobBoard.Application\obj\Debug\net10.0\JobBoard.Application.dll
+G:\Projects\JobBoard.Application\obj\Debug\net10.0\refint\JobBoard.Application.dll
+G:\Projects\JobBoard.Application\obj\Debug\net10.0\JobBoard.Application.pdb
+G:\Projects\JobBoard.Application\obj\Debug\net10.0\ref\JobBoard.Application.dll
