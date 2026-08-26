@@ -4,11 +4,9 @@ using System.Text;
 
 namespace JobBoard.Domain.Enums
 {
-    public enum JobType
+    public enum Location
     {
-        FullTime,
-        PartTime,
-        Contract,
-        HourBased,
+        OnSite,
+        Remote,
     }
 }
