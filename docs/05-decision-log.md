@@ -1,6 +1,6 @@
 # 05 — Decision Log
 
-Every time I make a real architectural or design choice (not just "I wrote a for loop this way" — actual structural decisions), log it here in 3-4 lines. This is what lets me explain my reasoning months later in an interview, instead of just saying "AI suggested it" or "I don't remember why."
+Every time I make a real architectural or design choice, log it here in 3-4 lines. This is what lets me explain my reasoning months later in an interview, instead of just saying "AI suggested it" or "I don't remember why."
 
 ## Format
 ```
@@ -23,11 +23,16 @@ Every time I make a real architectural or design choice (not just "I wrote a for
 **Context:** I considered splitting JobBoard into separate Domain, Application, Infrastructure, and API projects.
 **Decision:** Do not adopt the full multi-project Clean Architecture structure yet. Start with a simpler structure and reconsider the split after Phase 1.
 **Why:** Clean Architecture introduces additional concepts and complexity that aren't necessary to learn the API fundamentals first. I want to understand the boundaries before introducing more architectural layers.
+**Status:** Superseded by 2026-08-23 entry below.
+
+### [2026-08-23] — Reverse the deferral: adopt Clean Architecture from the start
+**Context:** After finishing the Identity portion of the playlist, I reconsidered the deferral decision above. I recognized a personal pattern: when I defer an advanced structure "until later," it tends to mean I never do it, because by the time "later" arrives I've already built things in the simpler shape and rebuilding feels like wasted work.
+**Decision:** Set up JobBoard as four projects (Domain, Application, Infrastructure, Api) from the very start, before writing feature code.
+**Why:** I have almost nothing built yet, so the cost of the more complex structure is low right now and will only grow. I'd rather learn project boundaries deliberately on a near-empty project than retrofit them onto a working one later.
 **Status:** Active
 
-
-### Example (delete once I have my own real entries)
+### [Date] — Employer/JobSeeker: roles vs. separate tables
 **Context:** Needed to decide whether Employer/JobSeeker are separate tables or roles on one ApplicationUser.
-**Decision:** Used Identity's built-in Roles system, single ApplicationUser table.
-**Why:** Phase 1 has no fields unique to one role that the other doesn't also roughly need (name, email). Adding a second table now would be speculative complexity with no current requirement driving it.
-**Status:** Active
+**Decision:**
+**Why:**
+**Status:**

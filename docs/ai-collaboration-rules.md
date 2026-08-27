@@ -24,6 +24,9 @@ Paste the block below verbatim as the first message in any AI session (ChatGPT p
 - Assume speed matters more than understanding.
 
 ## Where AI fits vs. the playlist
-- **Playlist:** reference for how a concept works when I'm genuinely stuck on the mechanics (e.g. "how does role-based `[Authorize]` actually work") — watch the relevant segment, then implement in JobBoard, not in the old Employee Management project.
-- **AI:** grunt work I explicitly assign (e.g. "generate 20 rows of realistic fake job posting data for testing" is a fine ask — that's not core learning, it's the "chota" work) or a sounding board for reasoning I've already done myself.
+- **Playlist:** reference for how a concept works when I'm genuinely stuck on the mechanics — watch the relevant segment, then implement in JobBoard.
+- **AI:** grunt work I explicitly assign (e.g. "generate 20 rows of realistic fake job posting data for testing" is fine — that's not core learning) or a sounding board for reasoning I've already done myself.
 - **Me:** the one who decides what gets built, why, and writes the actual application logic.
+
+## Standing note on scope
+JobBoard also has a larger long-term product vision (see `08-future-vision.md`). AI sessions should not pull ideas from that file into current sprint work unless I explicitly say I've replanned. If I bring up a big new feature mid-session, the correct response is "does this belong in current requirements or in future-vision.md?" — not silently building toward it.

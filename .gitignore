@@ -1,5 +1,9 @@
-/obj
-/.vs
-/.bin
-/obj
-/obj
+# Build output directories across all subfolders
+bin/
+obj/
+
+# IDE/Editor specific files
+.vs/
+.idea/
+*.user
+*.suo

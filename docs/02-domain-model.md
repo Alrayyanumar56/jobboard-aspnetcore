@@ -1,23 +1,24 @@
 # 02 — Domain Model
 
-This is architecture-level thinking (what exists and how it relates), not code. Writing the actual C# classes, migrations, and validation logic is still mine to do.
+This is architecture-level thinking (what exists and how it relates), not code. Writing the actual C# classes, migrations, and validation logic is still mine to do. Entities below live in `JobBoard.Domain`.
 
 ## Core entities
 
-**ApplicationUser** (extends `IdentityUser`)
+**ApplicationUser** (extends `IdentityUser`, lives in Infrastructure or a shared Identity area — decide and log which)
 - Identity already gives you Id, Email, PasswordHash, etc.
-- Add a `Role` distinction — either via ASP.NET Core Identity's built-in Roles system (recommended: `Employer` role, `JobSeeker` role, assigned at registration) rather than a custom column. This is exactly what the playlist's Identity/roles sections (78-83) cover — use those concepts here instead of in the old Employee Management project.
+- Add a `Role` distinction via ASP.NET Core Identity's built-in Roles system (`Employer` role, `JobSeeker` role, assigned at registration) rather than a custom column.
 
-**Job**
+**Job** (`JobBoard.Domain.Entities.Job`)
 - Belongs to exactly one Employer (an `ApplicationUser` in the Employer role).
-- Fields: Title, CompanyName, Description, Location, SalaryRange (nullable), JobType (enum: FullTime/PartTime/Remote), PostedDate (set server-side).
-- Owner reference: a foreign key to the Employer's ApplicationUser Id. This foreign key is the field the ownership check (see 01-architecture-overview.md) compares against.
+- Fields as currently implemented: Id, Title, Description, JobType (enum), JobLocation, EmployerId, PostedAt (`DateTimeOffset`), SalaryRange.
+- Owner reference: `EmployerId`, a foreign key to the Employer's ApplicationUser Id. This is the field the ownership check compares against.
+- **Open item to resolve:** `JobType` enum currently includes `FullTime/PartTime/Contract/HourBased`, and a separate `Location` enum includes `OnSite/Remote`. Check for overlap — is "remote" a job type, a location attribute, or does it legitimately need to exist as both a work arrangement (remote vs onsite) and a broader location field (city/region) once real geography matters? Resolve and log the reasoning before this causes confusion in filtering logic later.
 
-**Application** (the "a Job Seeker applied to a Job" record — careful, this name collides conceptually with "Application" the .NET project itself; consider naming the class `JobApplication` in code to avoid confusion)
+**JobApplication** (careful with naming — avoid confusion with the .NET "Application" project-level term; `JobApplication` as a class name is correct)
 - Belongs to exactly one Job.
 - Belongs to exactly one Job Seeker (an `ApplicationUser` in the JobSeeker role).
-- A given (Job, JobSeeker) pair should be unique — this is where the "can't apply twice" rule lives. Think about whether this is enforced with a unique database constraint, an application-level check before insert, or both, and be able to explain the tradeoff.
-- Fields (Phase 1): ApplicationDate (server-side), and that's close to it — no resume, no cover letter yet.
+- A given (Job, JobSeeker) pair should be unique — this is where the "can't apply twice" rule lives. Decide whether this is enforced via a unique database constraint, an application-level check before insert, or both.
+- Fields (Phase 1): ApplicationDate (server-side).
 - Phase 2 adds a Status field (Pending/Reviewed/Rejected/Accepted).
 
 ## Relationships (ER, conceptual)
@@ -35,13 +36,12 @@ erDiagram
     JOB {
         int Id
         string Title
-        string CompanyName
         string Description
-        string Location
-        string SalaryRange
         string JobType
-        datetime PostedDate
+        string JobLocation
         string EmployerId
+        datetimeoffset PostedAt
+        string SalaryRange
     }
     JOBAPPLICATION {
         int Id
@@ -51,21 +51,22 @@ erDiagram
     }
 ```
 
-## Open design questions to resolve myself before writing model classes
-(Write my own answer in this file, in a "Decision:" line under each, once decided — don't leave these unresolved once I start coding.)
+## Open design questions (update Decision: lines as resolved)
 
 1. **Employer/JobSeeker as roles on one ApplicationUser table, vs. separate profile tables per role?**
-   - Roles-only is simpler and matches what the playlist teaches. Separate profile tables would matter more if Employers needed extra fields (company logo, company description) that Job Seekers don't. Given Phase 1 has no such fields, roles-only is likely sufficient — but decide and write down *why*, don't just default silently.
    - Decision:
 
-2. **Where exactly does the "already applied" duplicate check live?**
+2. **Where exactly does the "already applied" duplicate check live (Application layer service vs. database constraint vs. both)?**
    - Decision:
 
-3. **Does `JobType` deserve its own lookup table, or is a C# enum enough for Phase 1?**
-   - An enum is almost certainly enough. A lookup table is the kind of thing that sounds "more professional" but is actually unnecessary complexity here. Naming this bias explicitly so I don't fall for it later.
+3. **JobType vs Location enum overlap (see note under Job above) — how do these two concepts actually relate?**
+   - Decision:
+
+4. **Where does `ApplicationUser` physically live in the Clean Architecture split — Domain, or Infrastructure (since Identity is a framework/infrastructure concern)?**
    - Decision:
 
 ## What NOT to model yet (Phase 2+, don't build the columns/tables now)
 - Resume file storage
 - Application status
 - Notifications
+- Anything from `08-future-vision.md` (payments, AI matching, freelance mode, CV parsing) — that file is explicitly out of scope until Phase 1/2 are done and I've consciously replanned

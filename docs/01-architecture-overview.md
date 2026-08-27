@@ -1,68 +1,54 @@
 # 01 — Architecture Overview
 
 ## Stack
-- ASP.NET Core MVC (Razor views, not a separate SPA frontend — at least not in Phase 1)
+- ASP.NET Core Web API (no Razor views — API returns data, Swagger documents/tests it)
 - ASP.NET Core Identity for authentication + roles
 - Entity Framework Core + SQL Server for data access
-- Bootstrap for styling (AI-generated markup is acceptable here — this is explicitly the "frontend, don't sweat it" zone from the requirements doc)
+- Swagger / OpenAPI (via Swashbuckle.AspNetCore) for API documentation and manual testing
+- Frontend (React, and later a mobile app) is a separate consumer of the API — built/assisted by AI where needed, not the focus of my own learning here
 
-## High-level architecture style
-Standard layered MVC, not microservices, not CQRS, not a separate API project — deliberately simple, because the goal is depth on fundamentals, not architectural sophistication for its own sake. Over-engineering this would just be procrastination wearing a nicer outfit.
-
+## Architecture style: Clean Architecture, four projects in one solution
 ```
-Browser
-   |
-   v
-Controllers  (handle HTTP requests, call services/repositories, return Views)
-   |
-   v
-Services / Repository layer  (business logic, ownership checks, queries)
-   |
-   v
-DbContext (EF Core)
-   |
-   v
-SQL Server database
+JobBoard (solution)
+├── JobBoard.Domain          <- entities, enums. Depends on nothing.
+├── JobBoard.Application     <- interfaces, business/use-case logic. Depends on Domain.
+├── JobBoard.Infrastructure  <- EF Core, Identity, external services. Depends on Application + Domain.
+└── JobBoard.Api             <- controllers, Swagger, HTTP concerns. Depends on Application + Infrastructure.
 ```
 
-## Why a service/repository layer at all (rather than DbContext directly in controllers)
-Kudvenkat's playlist covers the Repository pattern (video 49) — this is a deliberate spot to apply it rather than just watch it. Reasoning I should be able to state out loud:
-- Ownership checks (e.g. "is this Job owned by the logged-in Employer?") are business logic, not HTTP logic. They don't belong crammed into a controller action.
-- Keeping controllers thin makes them easier to reason about and test later.
-- I do NOT need this to be enterprise-grade. A simple `IJobService` / `JobService` with a few methods is enough. Resist the urge to over-abstract.
+Dependency rule to keep saying out loud until it's automatic: **dependencies point inward.** Domain knows about nothing else. Everything else knows about Domain. Api is the outermost layer and can see everything; Domain can see nothing.
 
-## Request lifecycle example (walk through this from memory, don't just read it)
+## Why this over a single project (reasoning, not just "it's more professional")
+- Forces explicit boundaries: a repository interface lives in Application, its EF Core implementation lives in Infrastructure — this makes swapping the database, or unit-testing business logic without a real database, structurally possible rather than theoretical.
+- Controllers in Api can only reach business logic through Application's interfaces — this makes "don't write logic in controllers" a compiler-enforced rule, not just discipline.
+- Previously deferred this (see decision log) to avoid complexity while learning Identity/EF Core basics. Reversed that decision once Identity fundamentals were solid, on the reasoning that repeated deferral tends to become permanent avoidance.
+
+## Where things live
+- **Domain**: `Job`, `JobApplication`, enums (`JobType`, etc.), and any domain-only logic that doesn't need external dependencies.
+- **Application**: interfaces like `IJobRepository`, `IJobService`; DTOs for request/response shaping; validation/business rules that orchestrate domain objects.
+- **Infrastructure**: `ApplicationDbContext`, EF Core migrations, concrete repository implementations, Identity configuration.
+- **Api**: Controllers (`: ControllerBase`, `[ApiController]`), Swagger setup, `Program.cs`, DI wiring that connects interfaces (Application) to implementations (Infrastructure).
+
+## Request lifecycle example (walk through this from memory)
 "Employer creates a job posting":
-1. Employer, logged in, navigates to `/Jobs/Create` (GET) → Controller returns the form view.
-2. Employer submits form → POST to `/Jobs/Create` → Model binding populates a `Job` (or `JobCreateViewModel`) from form fields.
-3. Controller checks `ModelState.IsValid`.
-4. Controller calls a service method, passing the current logged-in user's Id as the owner — never trusting a hidden form field for this.
-5. Service persists via DbContext, EF Core generates the SQL insert.
-6. Controller redirects (Post-Redirect-Get pattern — already covered in the playlist) to the Employer's dashboard.
+1. React (or Swagger, for manual testing) sends `POST /api/jobs` with a JSON body.
+2. `JobsController` (Api) receives it, model-binds into a request DTO (not the raw `Job` entity — same over-posting reasoning as before, just DTOs instead of ViewModels now).
+3. Controller checks `ModelState.IsValid`, then calls `IJobService.CreateJob(...)` — an interface defined in Application.
+4. The concrete implementation (Infrastructure) does the ownership assignment (current logged-in user's Id, never trusted from the request body) and persists via `ApplicationDbContext`.
+5. Controller returns `Ok(...)` or `CreatedAtAction(...)` with the created resource — no redirects, this is an API, not a browser flow.
 
-## Authorization architecture (the part I most need to get right)
-Two enforcement points, both required — neither alone is enough:
-- **Attribute-level:** `[Authorize(Roles = "Employer")]` on controllers/actions that only Employers should reach at all.
-- **Ownership-level (resource-based):** even with the role attribute in place, an Employer could still try to edit *another* Employer's job by guessing the URL/id. This requires an explicit check inside the action or service: compare the record's owner id to the logged-in user's id before allowing edit/delete. This is the check I must consciously write and consciously test by trying to break it — see `03-requirements.md` section 2.2.
+## Authorization architecture (still the part I most need to get right)
+Same two enforcement points as before, just expressed via API responses instead of redirects:
+- **Attribute-level:** `[Authorize(Roles = "Employer")]` on endpoints only Employers should reach at all. Failure → 401/403, not a redirect to a login page.
+- **Ownership-level:** compare the resource's owner id to the logged-in user's id before allowing edit/delete, regardless of role. This lives in Application/Infrastructure logic, not scattered in the controller.
 
-## Folder-level architecture (see 04-project-structure-guide.md for what goes inside each)
-```
-/Controllers
-/Models            <- domain entities (Job, Application, etc.)
-/ViewModels         <- shapes tailored for specific views/forms, not raw entities
-/Views
-/Services           <- business logic + ownership checks
-/Data               <- DbContext, migrations
-wwwroot/            <- static assets, AI-generated frontend lives here without guilt
-```
-
-## Diagram: component relationship (Mermaid — renders on GitHub)
+## Diagram: component relationship (Mermaid)
 ```mermaid
 flowchart TD
-    A[Browser] --> B[Controller]
-    B --> C[Service Layer]
-    C --> D[DbContext / EF Core]
+    A[React / Swagger client] --> B[Api: Controller]
+    B --> C[Application: Interface + business logic]
+    C --> D[Infrastructure: Repository impl + DbContext]
     D --> E[(SQL Server)]
-    C -->|ownership check| C
     B -->|Authorize attribute| F[Identity / Roles]
+    C -->|ownership check| C
 ```

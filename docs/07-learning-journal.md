@@ -9,5 +9,9 @@ Rule: entries here come from MY bugs and MY confusion, not from re-transcribing 
 
 ## Entries
 
-### Example (delete once I have real ones)
+[23-Aug-2026] — Concept: `.gitignore` only stops Git from tracking *new* files — it does not untrack files that were already committed. Had to manually remove `obj/`/`bin/` from Git's index after adding the ignore rules, because GitHub Desktop kept showing them as changes.
+
+[23-Aug-2026] — Concept: A class needs to be `public`, not `internal`, if other projects in the solution need to reference it — `internal` restricts visibility to the same assembly/project only. Hit this when `Job` in Domain wasn't visible from Application/Infrastructure.
+
+### Example (delete once I have more real ones)
 [Date] — Concept: Ownership check = compare `job.EmployerId` to the logged-in user's Id before allowing edit — enforced server-side, not just hidden in UI. Got here because I tried pasting another employer's edit URL and it worked when it shouldn't have.
