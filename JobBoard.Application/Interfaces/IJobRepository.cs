@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using JobBoard.Domain.Entities;
 
 namespace JobBoard.Application.Interfaces
 {
-    internal class IJobRepository
+    public interface IJobRepository
     {
+        public Job AddJob(Job job);
     }
 }
