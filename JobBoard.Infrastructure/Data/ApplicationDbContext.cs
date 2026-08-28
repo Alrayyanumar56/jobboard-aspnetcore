@@ -8,6 +8,10 @@ namespace JobBoard.Infrastructure.Data
 {
     public class ApplicationDbContext:DbContext
     {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext>options):base(options)
+        {
+
+        }
         public DbSet<Job> Job
             { get; set; }
     }
