@@ -11,10 +11,10 @@ Check this FIRST when sitting down after any gap of more than a couple days.
 - [x] `Job` entity created in Domain (public, not internal)
 - [x] `JobType` and `Location` enums created in Domain — **overlap between the two needs resolving (see 02-domain-model.md item 3)**
 - [x] `IJobRepository` interface (Application) — intentionally not created yet; declined an AI-generated version to write it myself
-- [ ] `JobRepository` implementation (Infrastructure)
+- [x] `JobRepository` implementation (Infrastructure)
 - [ ] `ApplicationUser` extended, roles set up (Employer, JobSeeker) — decide where it physically lives (Infrastructure vs shared Identity area)
 - [x] `ApplicationDbContext` created, EF Core wired to SQL Server
-- [ ] First migration run
+- [x] First migration run
 - [ ] Registration/login endpoints (JWT-based, not cookie-based — playlist doesn't cover this, research separately)
 - [ ] Swagger set up and confirmed working (`/swagger` loads, at least one endpoint visible)
 - [ ] `JobApplication` entity created and reasoned through
@@ -57,3 +57,15 @@ Check this FIRST when sitting down after any gap of more than a couple days.
 - Stuck on: Understanding how the DbContext, repository, and SQL Server connection fit together.
 - Resolved by: Learned that DbContext tracks entity changes while SaveChanges persists them; understood that Program.cs configures DI and the database connection; fixed SQL Server provider/package and namespace issues.
 - Concept learned: A repository interface defines the contract while the Infrastructure repository implements it. EF Core's DbContext sits between the repository and database.
+
+### [2026-08-28]
+
+* Did: Implemented the first `JobRepository` method using `ApplicationDbContext` dependency injection.
+* Did: Created `ApplicationDbContext` in Infrastructure and connected it to the local SQL Server database through the connection string in the API configuration.
+* Did: Configured EF Core SQL Server support and EF Core tooling after resolving missing package/tooling issues.
+* Stuck on: `Add-Migration` initially wasn't recognized, then EF Core reported that `ApplicationDbContext` only had a parameterless constructor.
+* Resolved by: Understanding that the context must receive `DbContextOptions<ApplicationDbContext>` and pass those options to the base `DbContext`, allowing the configuration from `AddDbContextPool` to reach EF Core.
+* Did: Created the `InitialCreate` EF Core migration and applied it with `Update-Database`.
+* Result: Local `JobBoardDB` now contains the `Job` table generated from the `Job` entity.
+* Concept learned: EF Core uses the application's configured `DbContext` and migrations to translate the C# domain model into database schema changes; `Update-Database` applies those changes to the actual database.
+* Next decision: Resolve the Identity/ApplicationUser ID design before continuing with employer ownership and authentication.

@@ -19,7 +19,7 @@ namespace JobBoard.Domain.Entities
         public JobType JobType { get; set; }
         public Location JobLocation { get; set; }
         [Required]
-        public int EmployerId { get; set; }
+        public String EmployerId { get; set; }
         [Required]
         public DateTimeOffset PostedAt{ get; set; }
         public String? SalaryRange { get; set; }
