@@ -2,6 +2,7 @@ using JobBoard.Application.Interfaces;
 using JobBoard.Infrastructure.Repositories;
 using JobBoard.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 
 
@@ -15,6 +16,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("JobBoardDBConnection")));
 builder.Services.AddScoped<IJobRepository, JobRepository>();
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -24,7 +26,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
