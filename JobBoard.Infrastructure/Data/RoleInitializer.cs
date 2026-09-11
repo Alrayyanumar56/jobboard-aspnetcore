@@ -1,10 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Identity.Client.NativeInterop;
 
 namespace JobBoard.Infrastructure.Data
 {
-    internal class RoleInitializer
+    public class RoleInitializer
     {
+        private readonly RoleManager<IdentityRole> roleManager;
+         public RoleInitializer(RoleManager<IdentityRole>roleManager)
+        {
+            this.roleManager = roleManager;
+        }
+        public async Task InitializeRolesAsync()
+        {
+            
+        }
     }
 }
