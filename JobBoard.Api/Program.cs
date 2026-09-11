@@ -16,8 +16,10 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("JobBoardDBConnection")));
 builder.Services.AddScoped<IJobRepository, JobRepository>();
+builder.Services.AddScoped<RoleInitializer>();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 var app = builder.Build();
+var roleInitializer = app.Services.GetRequiredService<RoleInitializer>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -28,7 +30,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-
+await roleInitializer.InitializeRolesAsync();
 app.MapControllers();
 
 app.Run();

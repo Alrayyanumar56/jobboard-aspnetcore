@@ -7,3 +7,4 @@ obj/
 .idea/
 *.user
 *.suo
+JobBoard.Api/appsettings.json
