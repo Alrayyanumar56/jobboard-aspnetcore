@@ -19,9 +19,14 @@ builder.Services.AddScoped<IJobRepository, JobRepository>();
 builder.Services.AddScoped<RoleInitializer>();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 var app = builder.Build();
-var roleInitializer = app.Services.GetRequiredService<RoleInitializer>();
+using (var scope = app.Services.CreateScope())
+{
+    var roleInitializer = scope.ServiceProvider.GetRequiredService<RoleInitializer>();
+    await roleInitializer.InitializeRolesAsync();
+}
 
 // Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -30,7 +35,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-await roleInitializer.InitializeRolesAsync();
 app.MapControllers();
 
 app.Run();
