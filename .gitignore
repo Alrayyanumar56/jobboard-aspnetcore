@@ -8,3 +8,4 @@ obj/
 *.user
 *.suo
 JobBoard.Api/appsettings.json
+JobBoard.Api/appsettings.json
