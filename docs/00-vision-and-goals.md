@@ -30,7 +30,6 @@ Both of these are downstream consumers of the same API — they do not change wh
 ## Rules of engagement (short version — full version in ai-collaboration-rules.md)
 - Playlist = reference for concepts, not a script to copy.
 - AI = the "chota" in the shop. I'm the owner. AI does grunt work I explicitly assign or explains a concept — it does not design or write my features for me.
-- If I catch myself pasting code I don't understand, that's the signal to stop and go back to first principles, not to keep moving.
 
 ## A note on scope discipline
 I have a larger long-term product vision for this idea (see `08-future-vision.md`) — CV parsing, AI-based matching, paid tiers, freelance mode, etc. That vision is deliberately kept in its own file and is NOT part of Phase 1 or Phase 2 requirements. Every time a new feature idea comes up mid-build, it goes into that file, not into the current sprint, unless I've consciously decided to replan and logged why.

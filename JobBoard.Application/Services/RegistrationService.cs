@@ -7,14 +7,15 @@ using JobBoard.Application.Interfaces;
 
 public class RegistrationService:IRegistrationService
 {
-    private readonly UserManager<> _userManager;
-    RegistrationService(UserManager<ApplicationUser> _userManager)
+    private readonly IIdentityService identityService;
+
+    public RegistrationService(IIdentityService identityService)
     {
-        this._userManager=_userManager;
+        this.identityService = identityService;
     }
 
-    public Task RegisterUser(RegisterRequest registerRequest)
+    public async Task RegisterUser(RegisterRequest registerRequest)
     {
-        throw new NotImplementedException();
+       await identityService.CreateUser(registerRequest.Email, registerRequest.Password, registerRequest.Role);
     }
 }
