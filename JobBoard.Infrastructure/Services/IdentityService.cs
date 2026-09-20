@@ -16,9 +16,17 @@ namespace JobBoard.Infrastructure.Services
         {
             this.userManager = userManager;
         }
-       public Task CreateUser(String Email, String Password, UserRole Role)
+       public async Task<IdentityResult> CreateUser(String Email, String Password, UserRole Role)
         {
-            throw new NotImplementedException();
+            ApplicationUser user = new ApplicationUser();
+            user.UserName= Email;
+            user.Email= Email;
+           var result= await userManager.CreateAsync(user,Password);
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(user, Role.ToString());
+            }
+            return result;
         }
     }
 }

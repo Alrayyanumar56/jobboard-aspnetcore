@@ -1,8 +1,10 @@
 using JobBoard.Application.Interfaces;
-using JobBoard.Infrastructure.Repositories;
+using JobBoard.Application.Services;
 using JobBoard.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
+using JobBoard.Infrastructure.Repositories;
+using JobBoard.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 
 
@@ -18,6 +20,8 @@ options.UseSqlServer(builder.Configuration.GetConnectionString("JobBoardDBConnec
 builder.Services.AddScoped<IJobRepository, JobRepository>();
 builder.Services.AddScoped<RoleInitializer>();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddScoped<IIdentityService, IdentityService>();
+builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {

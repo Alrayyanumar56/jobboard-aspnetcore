@@ -14,8 +14,9 @@ public class RegistrationService:IRegistrationService
         this.identityService = identityService;
     }
 
-    public async Task RegisterUser(RegisterRequest registerRequest)
+    public async Task<IdentityResult> RegisterUser(RegisterRequest registerRequest)
     {
-       await identityService.CreateUser(registerRequest.Email, registerRequest.Password, registerRequest.Role);
+        var result = await identityService.CreateUser(registerRequest.Email, registerRequest.Password, registerRequest.Role);
+        return result;
     }
 }
