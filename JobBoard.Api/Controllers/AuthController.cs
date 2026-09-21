@@ -22,11 +22,11 @@ namespace JobBoard.Api.Controllers
             var result = await registrationService.RegisterUser(registerRequest);
             if (result.Succeeded)
             {
-                return StatusCode(201, registerRequest);
+                return StatusCode(201, "User Registered!");
             }
             else
             {
-                return BadRequest(registerRequest);
+                return BadRequest("Registration Failed");
             }
         }
     }
