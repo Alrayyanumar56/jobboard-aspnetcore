@@ -15,8 +15,8 @@ Check this FIRST when sitting down after any gap of more than a couple days.
 - [ ] `ApplicationUser` extended, roles set up (Employer, JobSeeker) — decide where it physically lives (Infrastructure vs shared Identity area)
 - [x] `ApplicationDbContext` created, EF Core wired to SQL Server
 - [x] First migration run
-- [ ] Registration/login endpoints (JWT-based, not cookie-based — playlist doesn't cover this, research separately)
-- [ ] Swagger set up and confirmed working (`/swagger` loads, at least one endpoint visible)
+- [] Registration/login endpoints (JWT-based, not cookie-based — playlist doesn't cover this, research separately)
+- [x] Swagger set up and confirmed working (`/swagger` loads, at least one endpoint visible)
 - [ ] `JobApplication` entity created and reasoned through
 - [ ] `/DTOs` in Application, request/response shapes in place
 - [ ] Employer: create job posting (via API)
@@ -69,3 +69,19 @@ Check this FIRST when sitting down after any gap of more than a couple days.
 * Result: Local `JobBoardDB` now contains the `Job` table generated from the `Job` entity.
 * Concept learned: EF Core uses the application's configured `DbContext` and migrations to translate the C# domain model into database schema changes; `Update-Database` applies those changes to the actual database.
 * Next decision: Resolve the Identity/ApplicationUser ID design before continuing with employer ownership and authentication.
+
+### [2026-09-21]
+
+* Did: Completed user registration using ASP.NET Core Identity through the Web API.
+* Did: Created `RegisterRequest` DTO with email, password, and `UserRole`.
+* Did: Implemented the registration flow through `IRegistrationService` / `RegistrationService` and `IIdentityService` / `IdentityService`.
+* Did: Used `UserManager<ApplicationUser>` to create users and assign Identity roles.
+* Did: Tested registration through Swagger with both `Employer` and `JobSeeker` roles.
+* Did: Verified duplicate email registration is rejected.
+* Did: Verified an invalid password is rejected by ASP.NET Core Identity validation.
+* Did: Verified successful registration returns `201 Created`.
+* Did: Verified `AspNetUsers` contains the newly registered users.
+* Did: Verified `AspNetUserRoles` correctly maps each user to the selected `Employer` or `JobSeeker` role.
+* Concept learned: `UserManager<ApplicationUser>` handles Identity user creation and password hashing, while Identity stores role membership separately through `AspNetUserRoles`.
+* Result: Registration milestone completed and verified end-to-end through Swagger and SQL Server.
+* Next step: Implement JWT-based login and understand the authentication flow before writing the implementation.
