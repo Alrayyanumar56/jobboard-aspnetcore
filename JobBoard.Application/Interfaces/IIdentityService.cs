@@ -10,5 +10,6 @@ namespace JobBoard.Application.Interfaces
     public interface IIdentityService
     {
         public Task<IdentityResult> CreateUser(string Email, string Password, UserRole Role);
+        public Task<LoginResponse> LoginUser(String Email, String Password);
     }
 }

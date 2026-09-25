@@ -12,21 +12,42 @@ namespace JobBoard.Infrastructure.Services
     {
         private readonly Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> userManager;
 
-       public  IdentityService(UserManager<ApplicationUser> userManager)
+        public IdentityService(UserManager<ApplicationUser> userManager)
         {
             this.userManager = userManager;
         }
-       public async Task<IdentityResult> CreateUser(String Email, String Password, UserRole Role)
+        public async Task<IdentityResult> CreateUser(String Email, String Password, UserRole Role)
         {
             ApplicationUser user = new ApplicationUser();
-            user.UserName= Email;
-            user.Email= Email;
-           var result= await userManager.CreateAsync(user,Password);
+            user.UserName = Email;
+            user.Email = Email;
+            var result = await userManager.CreateAsync(user, Password);
             if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(user, Role.ToString());
             }
             return result;
+        }
+
+        public async Task<LoginResponse> LoginUser(String Email, String Password)
+        {
+            ApplicationUser applicationUser = new ApplicationUser();
+            applicationUser.Email = Email;
+            var EmailResult = await userManager.FindByEmailAsync(applicationUser.Email);
+            if (EmailResult == null)
+            {
+                return null;
+            }
+            else { 
+                bool PassResult = await userManager.CheckPasswordAsync(EmailResult, Password);
+                if (PassResult == false)
+                { return null; }
+                else
+                {
+                    var UserRole = await userManager.GetRolesAsync(EmailResult);
+                }
+            }
+            return null;
         }
     }
 }
