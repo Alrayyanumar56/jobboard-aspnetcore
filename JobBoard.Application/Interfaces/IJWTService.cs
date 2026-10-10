@@ -6,6 +6,6 @@ namespace JobBoard.Application.Interfaces
 {
     public interface IJWTService
     {
-        public Task<String> GetJWTAsync(int UserID, String Email,String Role, DateTime Expiration);
+        public string GetJWT(string UserId, string Email, string Role, DateTime Expiration);
     }
 }
