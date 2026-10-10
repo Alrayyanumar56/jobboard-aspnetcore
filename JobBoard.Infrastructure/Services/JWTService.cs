@@ -11,13 +11,12 @@ using System.Text;
 
 namespace JobBoard.Infrastructure.Services
 {
-    internal class JWTService : IJWTService
+    public class JWTService : IJWTService
     {
-        private readonly JwtSecurityTokenHandler jwtSecurityTokenHandler;
+
         private readonly IConfiguration configuration;
 
-        JWTService(JwtSecurityTokenHandler jwtSecurityTokenHandler, IConfiguration configuration) {
-            this.jwtSecurityTokenHandler = jwtSecurityTokenHandler;
+        public JWTService(IConfiguration configuration) {
             this.configuration = configuration;
         }
         public string GetJWT(string UserId, string Email, string Role, DateTime Expiration)
@@ -31,8 +30,9 @@ namespace JobBoard.Infrastructure.Services
             string signingCred = configuration["Jwt:SecretKey"];
             byte[] keybytes=Convert.FromBase64String(signingCred);
             SymmetricSecurityKey symmetricSecurityKey = new SymmetricSecurityKey(keybytes);
-            SigningCredentials signingCredential = new SigningCredentials(symmetricSecurityKey,SecurityAlgorithms.HmacSha256); 
-            JwtSecurityToken jwtSecurityToken = new JwtSecurityToken(issuer:null,audience:null, claims, notbefore, expries, signingCredential);
+            SigningCredentials signingCredential = new SigningCredentials(symmetricSecurityKey,SecurityAlgorithms.HmacSha256);
+            JwtSecurityToken jwtSecurityToken = new JwtSecurityToken(issuer: null, audience: null, claims, notbefore, expries, signingCredential);
+            JwtSecurityTokenHandler jwtSecurityTokenHandler= new JwtSecurityTokenHandler();
             var result = jwtSecurityTokenHandler.WriteToken(jwtSecurityToken);
             return result;
         }

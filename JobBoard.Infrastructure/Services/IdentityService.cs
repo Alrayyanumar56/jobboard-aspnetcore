@@ -11,10 +11,12 @@ namespace JobBoard.Infrastructure.Services
     public class IdentityService : IIdentityService
     {
         private readonly Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> userManager;
+        private readonly IJWTService jWTService;
 
-        public IdentityService(UserManager<ApplicationUser> userManager)
+        public IdentityService(UserManager<ApplicationUser> userManager,IJWTService jWTService)
         {
             this.userManager = userManager;
+            this.jWTService = jWTService;
         }
         public async Task<IdentityResult> CreateUser(String Email, String Password, UserRole Role)
         {
@@ -45,6 +47,14 @@ namespace JobBoard.Infrastructure.Services
                 else
                 {
                     var UserRole = await userManager.GetRolesAsync(EmailResult);
+                    var Role = UserRole.FirstOrDefault();
+                    var UserId = EmailResult.Id;
+                    var token = jWTService.GetJWT(UserId, Email, Role, DateTime.UtcNow.AddHours(1));
+                    LoginResponse loginResponse = new LoginResponse();
+                    loginResponse.Token = token;
+                    loginResponse.Email = Email;
+                    loginResponse.Role = Enum.Parse<UserRole>(Role);
+                    return loginResponse;
                 }
             }
             return null;
