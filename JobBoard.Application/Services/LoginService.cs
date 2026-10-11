@@ -6,7 +6,7 @@ using System.Text;
 
 namespace JobBoard.Application.Services
 {
-    internal class LoginService : ILoginService
+    public class LoginService : ILoginService
     {
         private readonly IIdentityService identityService;
 
@@ -15,7 +15,8 @@ namespace JobBoard.Application.Services
         }
         public  Task<LoginResponse> LoginUser(LoginRequest loginRequest)
         {
-            throw new NotImplementedException();
+            return identityService.LoginUser(loginRequest.Email, loginRequest.Password);
+
         }
     }
 }

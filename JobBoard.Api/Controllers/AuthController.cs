@@ -2,6 +2,7 @@
 using JobBoard.Application.Interfaces;
 using JobBoard.Application.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JobBoard.Api.Controllers
@@ -11,12 +12,14 @@ namespace JobBoard.Api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IRegistrationService registrationService;
+        private readonly ILoginService loginService;
 
-        public AuthController(IRegistrationService registrationService)
+        public AuthController(IRegistrationService registrationService,ILoginService loginService)
         {
             this.registrationService = registrationService;
+            this.loginService = loginService;
         }
-        [HttpPost(Name = "RegisterRequest")]
+        [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterRequest registerRequest)
         {
             var result = await registrationService.RegisterUser(registerRequest);
@@ -28,6 +31,20 @@ namespace JobBoard.Api.Controllers
             {
                 return BadRequest("Registration Failed");
             }
+        }
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginRequest loginRequest)
+        {
+            var result = await loginService.LoginUser(loginRequest);
+            if (result!=null)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
         }
     }
 }
