@@ -31,6 +31,13 @@ Every time I make a real architectural or design choice, log it here in 3-4 line
 **Why:** I have almost nothing built yet, so the cost of the more complex structure is low right now and will only grow. I'd rather learn project boundaries deliberately on a near-empty project than retrofit them onto a working one later.
 **Status:** Active
 
+### [12-Oct-2026] — Shift to AI-assisted implementation
+**Context:** Hand-writing every line (DTOs, repository methods, controllers) was slowing progress, and I can now trace the full request flow myself.
+**Decision:** AI may generate implementation code in chat (not as an autonomous agent). I review and trace each feature, then test success and failure cases.
+**Why:** Faster delivery, with my learning shifting from typing code to reviewing, debugging and testing it.
+**Exception:** Ownership/authorization checks and their negative tests are written or verified by hand.
+**Status:** Active
+
 ### [Date] — Employer/JobSeeker: roles vs. separate tables
 **Context:** Needed to decide whether Employer/JobSeeker are separate tables or roles on one ApplicationUser.
 **Decision:**

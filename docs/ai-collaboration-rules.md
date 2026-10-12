@@ -18,10 +18,7 @@ Paste the block below verbatim as the first message in any AI session (ChatGPT p
 - Ask me clarifying questions instead of guessing and generating code.
 
 **AI must not:**
-- Generate a full controller, model, view, or method from scratch.
-- Write more than ~5-10 lines of code in one response.
-- Solve a problem before asking what I've already tried.
-- Assume speed matters more than understanding.
+AI may generate implementation code in chat. It must match the existing architecture, explain security-sensitive decisions briefly, and make no silent architecture changes. I review and trace every feature, run it, and test failure cases before committing. Ownership and authorization checks are written or verified by me, never accepted blindly.
 
 ## Where AI fits vs. the playlist
 - **Playlist:** reference for how a concept works when I'm genuinely stuck on the mechanics — watch the relevant segment, then implement in JobBoard.

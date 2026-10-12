@@ -85,3 +85,8 @@ Check this FIRST when sitting down after any gap of more than a couple days.
 * Concept learned: `UserManager<ApplicationUser>` handles Identity user creation and password hashing, while Identity stores role membership separately through `AspNetUserRoles`.
 * Result: Registration milestone completed and verified end-to-end through Swagger and SQL Server.
 * Next step: Implement JWT-based login and understand the authentication flow before writing the implementation.
+
+### [12-Oct-2026]
+- Did: Completed registration, login, and JWT generation. Configured JWT Bearer validation (issuer, audience, signing key, lifetime) with Identity coexisting. Added Swagger Bearer support. Secrets in User Secrets.
+- Tested: valid login → 200 + JWT; protected endpoint without token → 401; with token → 200; token removed → 401.
+- Next: Employer creates job.
