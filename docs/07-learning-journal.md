@@ -13,5 +13,7 @@ Rule: entries here come from MY bugs and MY confusion, not from re-transcribing 
 
 [23-Aug-2026] — Concept: A class needs to be `public`, not `internal`, if other projects in the solution need to reference it — `internal` restricts visibility to the same assembly/project only. Hit this when `Job` in Domain wasn't visible from Application/Infrastructure.
 
+[11-Oct-2026] — Concept: JWT authentication flow — ASP.NET Identity verifies the user's email and password, retrieves their ID and role, and `JWTService` generates a signed JWT containing claims, issuer, audience, and expiration. The login endpoint returns the token with the user's email and role on success (`200 OK`), or `401 Unauthorized` for invalid credentials. Generating a JWT is separate from validating it on subsequent protected requests.
+
 ### Example (delete once I have more real ones)
 [Date] — Concept: Ownership check = compare `job.EmployerId` to the logged-in user's Id before allowing edit — enforced server-side, not just hidden in UI. Got here because I tried pasting another employer's edit URL and it worked when it shouldn't have.

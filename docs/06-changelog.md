@@ -15,10 +15,10 @@ Check this FIRST when sitting down after any gap of more than a couple days.
 - [ ] `ApplicationUser` extended, roles set up (Employer, JobSeeker) — decide where it physically lives (Infrastructure vs shared Identity area)
 - [x] `ApplicationDbContext` created, EF Core wired to SQL Server
 - [x] First migration run
-- [] Registration/login endpoints (JWT-based, not cookie-based — playlist doesn't cover this, research separately)
+- [x] Registration/login endpoints (JWT-based, not cookie-based — playlist doesn't cover this, research separately)
 - [x] Swagger set up and confirmed working (`/swagger` loads, at least one endpoint visible)
-- [ ] `JobApplication` entity created and reasoned through
-- [ ] `/DTOs` in Application, request/response shapes in place
+- [x] `JobApplication` entity created and reasoned through
+- [x] `/DTOs` in Application, request/response shapes in place
 - [ ] Employer: create job posting (via API)
 - [ ] Employer: get only own postings
 - [ ] Employer: edit/delete own posting

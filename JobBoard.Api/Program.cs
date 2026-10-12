@@ -3,8 +3,12 @@ using JobBoard.Application.Services;
 using JobBoard.Infrastructure.Data;
 using JobBoard.Infrastructure.Repositories;
 using JobBoard.Infrastructure.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
+using System.Text;
 
 
 
@@ -15,7 +19,23 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header
+    });
+
+    options.AddSecurityRequirement(document =>
+        new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+        });
+});
 builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("JobBoardDBConnection")));
 builder.Services.AddScoped<IJobRepository, JobRepository>();
@@ -25,6 +45,31 @@ builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 builder.Services.AddScoped<IJWTService, JWTService>();
 builder.Services.AddScoped<ILoginService, LoginService>();
+
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(option =>
+    {
+        String Issuer = builder.Configuration["Jwt:Issuer"];
+        String Audience = builder.Configuration["Jwt:Audience"];
+        byte[] SecurityKey = Convert.FromBase64String(builder.Configuration["Jwt:SecretKey"]);
+
+        option.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = Issuer,
+            ValidateAudience = true,
+            ValidAudience = Audience,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(SecurityKey),
+            ValidateLifetime= true,
+        };
+    });
+    
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
