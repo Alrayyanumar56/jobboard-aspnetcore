@@ -1,4 +1,5 @@
 using JobBoard.Application.Interfaces;
+using JobBoard.Application.Jobs.CreateJob;
 using JobBoard.Application.Services;
 using JobBoard.Infrastructure.Data;
 using JobBoard.Infrastructure.Repositories;
@@ -39,6 +40,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("JobBoardDBConnection")));
 builder.Services.AddScoped<IJobRepository, JobRepository>();
+builder.Services.AddScoped<CreateJobHandler>();
 builder.Services.AddScoped<RoleInitializer>();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddScoped<IIdentityService, IdentityService>();
@@ -66,10 +68,10 @@ builder.Services
             ValidAudience = Audience,
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(SecurityKey),
-            ValidateLifetime= true,
+            ValidateLifetime = true,
         };
     });
-    
+
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {

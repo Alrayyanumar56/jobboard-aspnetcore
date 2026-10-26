@@ -15,10 +15,10 @@ namespace JobBoard.Infrastructure.Repositories
         {
             this.dbContext = dbContext;
         }
-        public Job AddJob(Job job)
+        public async Task<Job> AddJob(Job job)
         {
             dbContext.Add(job);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
             return job;
         }
     }

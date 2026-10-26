@@ -7,6 +7,6 @@ namespace JobBoard.Application.Interfaces
 {
     public interface IJobRepository
     {
-        public Job AddJob(Job job);
+        public Task<Job> AddJob(Job job);
     }
 }
