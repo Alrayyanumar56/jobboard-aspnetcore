@@ -1,5 +1,7 @@
 using JobBoard.Application.Interfaces;
 using JobBoard.Application.Jobs.CreateJob;
+using JobBoard.Application.Jobs.GetJobById;
+using JobBoard.Application.Jobs.GetJobs;
 using JobBoard.Application.Services;
 using JobBoard.Infrastructure.Data;
 using JobBoard.Infrastructure.Repositories;
@@ -41,6 +43,8 @@ builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("JobBoardDBConnection")));
 builder.Services.AddScoped<IJobRepository, JobRepository>();
 builder.Services.AddScoped<CreateJobHandler>();
+builder.Services.AddScoped<GetJobsHandler>();
+builder.Services.AddScoped<GetJobByIdHandler>();
 builder.Services.AddScoped<RoleInitializer>();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddScoped<IIdentityService, IdentityService>();
