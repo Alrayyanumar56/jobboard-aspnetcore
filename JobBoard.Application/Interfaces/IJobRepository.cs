@@ -8,5 +8,7 @@ namespace JobBoard.Application.Interfaces
     public interface IJobRepository
     {
         public Task<Job> AddJob(Job job);
+        public Task<List<Job>> GetAllJobs();
+        public Task<Job?> GetJobById(int id);
     }
 }

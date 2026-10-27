@@ -21,5 +21,18 @@ namespace JobBoard.Infrastructure.Repositories
             await dbContext.SaveChangesAsync();
             return job;
         }
+        public async Task<List<Job>> GetAllJobs()
+        {
+            return await dbContext.Job
+                .AsNoTracking()
+                .OrderByDescending(j => j.PostedAt)
+                .ToListAsync();
+        }
+        public async Task<Job?> GetJobById(int id)
+        {
+            return await dbContext.Job
+                .AsNoTracking()
+                .FirstOrDefaultAsync(j => j.Id == id);
+        }
     }
 }
