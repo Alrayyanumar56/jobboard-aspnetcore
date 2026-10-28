@@ -4,6 +4,7 @@ using JobBoard.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 
 namespace JobBoard.Infrastructure.Repositories
 {
