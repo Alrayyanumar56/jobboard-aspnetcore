@@ -3,6 +3,7 @@ using JobBoard.Application.Jobs.ApplyToJob;
 using JobBoard.Application.Jobs.CreateJob;
 using JobBoard.Application.Jobs.GetJobById;
 using JobBoard.Application.Jobs.GetJobs;
+using JobBoard.Application.Jobs.GetMyApplications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,13 +20,15 @@ namespace JobBoard.Api.Controllers
         private readonly GetJobsHandler getJobsHandler;
         private readonly GetJobByIdHandler getJobByIdHandler;
         private readonly ApplyToJobHandler applyToJobHandler;
+        private readonly GetMyApplicationsHandler getMyApplicationsHandler;
 
-        public JobController(CreateJobHandler createJobHandler, GetJobsHandler getJobsHandler, GetJobByIdHandler getJobByIdHandler, ApplyToJobHandler applyToJobHandler)
+        public JobController(CreateJobHandler createJobHandler, GetJobsHandler getJobsHandler, GetJobByIdHandler getJobByIdHandler, ApplyToJobHandler applyToJobHandler, GetMyApplicationsHandler getMyApplicationsHandler)
         {
             this.createJobHandler = createJobHandler;
             this.getJobsHandler = getJobsHandler;
             this.getJobByIdHandler = getJobByIdHandler;
             this.applyToJobHandler = applyToJobHandler;
+            this.getMyApplicationsHandler = getMyApplicationsHandler;
         }
         // Public browsing (docs/03-requirements.md): the class-level [Authorize] is overridden here.
         [HttpGet]
@@ -96,6 +99,24 @@ namespace JobBoard.Api.Controllers
                     detail: "You have already applied to this job."),
                 _ => StatusCode(StatusCodes.Status500InternalServerError)
             };
+        }
+        // "my-applications" is a fixed segment, so it can't clash with GET {id:int}.
+        [HttpGet("my-applications")]
+        [Authorize(Roles = "JobSeeker")]
+        [ProducesResponseType(typeof(List<MyApplicationResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> GetMyApplications()
+        {
+            // Whose applications to return is decided ONLY by the validated token.
+            var jobSeekerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(jobSeekerId))
+            {
+                return Unauthorized();
+            }
+
+            var applications = await getMyApplicationsHandler.Handle(jobSeekerId);
+            return Ok(applications);
         }
     }
 }

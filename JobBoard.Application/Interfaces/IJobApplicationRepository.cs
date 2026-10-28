@@ -1,4 +1,5 @@
-﻿using JobBoard.Domain.Entities;
+﻿using JobBoard.Application.DTOs;
+using JobBoard.Domain.Entities;
 
 namespace JobBoard.Application.Interfaces
 {
@@ -8,5 +9,6 @@ namespace JobBoard.Application.Interfaces
 
         // Returns false (instead of throwing) when the unique (JobId, JobSeekerId) index rejects a duplicate.
         public Task<bool> TryAddApplication(JobApplication application);
+        public Task<List<MyApplicationResponse>> GetApplicationsByJobSeeker(string jobSeekerId);
     }
 }

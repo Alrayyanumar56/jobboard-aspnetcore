@@ -1,4 +1,5 @@
-﻿using JobBoard.Application.Interfaces;
+﻿using JobBoard.Application.DTOs;
+using JobBoard.Application.Interfaces;
 using JobBoard.Domain.Entities;
 using JobBoard.Infrastructure.Data;
 using Microsoft.Data.SqlClient;
@@ -41,6 +42,24 @@ namespace JobBoard.Infrastructure.Repositories
                 // Only the duplicate case is translated; any other database error still surfaces.
                 return false;
             }
+        }
+        public async Task<List<MyApplicationResponse>> GetApplicationsByJobSeeker(string jobSeekerId)
+        {
+            // One query: join to Job for the title and select only the four columns the response needs.
+            // A projection to a DTO is never tracked, so no entities are loaded.
+            var query = from a in dbContext.JobApplication
+                        join j in dbContext.Job on a.JobId equals j.Id
+                        where a.JobSeekerId == jobSeekerId
+                        orderby a.ApplicationDate descending
+                        select new MyApplicationResponse
+                        {
+                            Id = a.Id,
+                            JobId = a.JobId,
+                            JobTitle = j.Title,
+                            ApplicationDate = a.ApplicationDate
+                        };
+
+            return await query.ToListAsync();
         }
     }
 }
