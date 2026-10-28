@@ -1,4 +1,5 @@
 ﻿using JobBoard.Application.DTOs;
+using JobBoard.Application.Jobs.ApplyToJob;
 using JobBoard.Application.Jobs.CreateJob;
 using JobBoard.Application.Jobs.GetJobById;
 using JobBoard.Application.Jobs.GetJobs;
@@ -17,12 +18,14 @@ namespace JobBoard.Api.Controllers
         private readonly CreateJobHandler createJobHandler;
         private readonly GetJobsHandler getJobsHandler;
         private readonly GetJobByIdHandler getJobByIdHandler;
+        private readonly ApplyToJobHandler applyToJobHandler;
 
-        public JobController(CreateJobHandler createJobHandler, GetJobsHandler getJobsHandler, GetJobByIdHandler getJobByIdHandler)
+        public JobController(CreateJobHandler createJobHandler, GetJobsHandler getJobsHandler, GetJobByIdHandler getJobByIdHandler, ApplyToJobHandler applyToJobHandler)
         {
             this.createJobHandler = createJobHandler;
             this.getJobsHandler = getJobsHandler;
             this.getJobByIdHandler = getJobByIdHandler;
+            this.applyToJobHandler = applyToJobHandler;
         }
         // Public browsing (docs/03-requirements.md): the class-level [Authorize] is overridden here.
         [HttpGet]
@@ -65,6 +68,34 @@ namespace JobBoard.Api.Controllers
 
             var result = await createJobHandler.Handle(command, employerId);
             return StatusCode(StatusCodes.Status201Created, result);
+        }
+        [HttpPost("{jobId:int}/applications")]
+        [Authorize(Roles = "JobSeeker")]
+        [ProducesResponseType(typeof(JobApplicationResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> ApplyToJob(int jobId)
+        {
+            // The applicant is identified ONLY by the validated token, never by the request.
+            var jobSeekerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(jobSeekerId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await applyToJobHandler.Handle(jobId, jobSeekerId);
+            return result.Status switch
+            {
+                ApplyToJobStatus.Created => StatusCode(StatusCodes.Status201Created, result.Application),
+                ApplyToJobStatus.JobNotFound => NotFound(),
+                ApplyToJobStatus.AlreadyApplied => Problem(
+                    statusCode: StatusCodes.Status409Conflict,
+                    title: "Already applied",
+                    detail: "You have already applied to this job."),
+                _ => StatusCode(StatusCodes.Status500InternalServerError)
+            };
         }
     }
 }

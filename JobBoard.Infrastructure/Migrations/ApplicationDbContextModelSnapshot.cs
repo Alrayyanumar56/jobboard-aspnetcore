@@ -61,6 +61,35 @@ namespace JobBoard.Infrastructure.Migrations
                     b.ToTable("Job");
                 });
 
+            modelBuilder.Entity("JobBoard.Domain.Entities.JobApplication", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("ApplicationDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("JobId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("JobSeekerId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobSeekerId");
+
+                    b.HasIndex("JobId", "JobSeekerId")
+                        .IsUnique();
+
+                    b.ToTable("JobApplication");
+                });
+
             modelBuilder.Entity("JobBoard.Infrastructure.Data.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -257,6 +286,21 @@ namespace JobBoard.Infrastructure.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("JobBoard.Domain.Entities.JobApplication", b =>
+                {
+                    b.HasOne("JobBoard.Domain.Entities.Job", null)
+                        .WithMany()
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JobBoard.Infrastructure.Data.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("JobSeekerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

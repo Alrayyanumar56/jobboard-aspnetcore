@@ -1,4 +1,5 @@
 using JobBoard.Application.Interfaces;
+using JobBoard.Application.Jobs.ApplyToJob;
 using JobBoard.Application.Jobs.CreateJob;
 using JobBoard.Application.Jobs.GetJobById;
 using JobBoard.Application.Jobs.GetJobs;
@@ -45,6 +46,8 @@ builder.Services.AddScoped<IJobRepository, JobRepository>();
 builder.Services.AddScoped<CreateJobHandler>();
 builder.Services.AddScoped<GetJobsHandler>();
 builder.Services.AddScoped<GetJobByIdHandler>();
+builder.Services.AddScoped<IJobApplicationRepository, JobApplicationRepository>();
+builder.Services.AddScoped<ApplyToJobHandler>();
 builder.Services.AddScoped<RoleInitializer>();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddScoped<IIdentityService, IdentityService>();
@@ -98,3 +101,9 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+
+/* {
+  "email": "user@example.com",
+  "password": "Password123!"
+}*/
