@@ -30,6 +30,9 @@ namespace JobBoard.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTimeOffset?>("ClosedAt")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(1000)

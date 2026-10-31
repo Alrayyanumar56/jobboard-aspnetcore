@@ -20,7 +20,8 @@ namespace JobBoard.Application.Jobs.ApplyToJob
         public async Task<ApplyToJobResult> Handle(int jobId, string jobSeekerId)
         {
             var job = await jobRepository.GetJobById(jobId);
-            if (job == null)
+            // A closed job no longer exists as far as applicants are concerned.
+            if (job == null || job.ClosedAt != null)
             {
                 return ApplyToJobResult.JobNotFound();
             }

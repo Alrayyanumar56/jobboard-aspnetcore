@@ -1,10 +1,12 @@
 ﻿using JobBoard.Application.DTOs;
 using JobBoard.Application.Jobs.ApplyToJob;
+using JobBoard.Application.Jobs.CloseJob;
 using JobBoard.Application.Jobs.CreateJob;
 using JobBoard.Application.Jobs.GetJobById;
 using JobBoard.Application.Jobs.GetJobApplicants;
 using JobBoard.Application.Jobs.GetJobs;
 using JobBoard.Application.Jobs.GetMyApplications;
+using JobBoard.Application.Jobs.UpdateJob;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,8 +25,10 @@ namespace JobBoard.Api.Controllers
         private readonly ApplyToJobHandler applyToJobHandler;
         private readonly GetMyApplicationsHandler getMyApplicationsHandler;
         private readonly GetJobApplicantsHandler getJobApplicantsHandler;
+        private readonly UpdateJobHandler updateJobHandler;
+        private readonly CloseJobHandler closeJobHandler;
 
-        public JobController(CreateJobHandler createJobHandler, GetJobsHandler getJobsHandler, GetJobByIdHandler getJobByIdHandler, ApplyToJobHandler applyToJobHandler, GetMyApplicationsHandler getMyApplicationsHandler, GetJobApplicantsHandler getJobApplicantsHandler)
+        public JobController(CreateJobHandler createJobHandler, GetJobsHandler getJobsHandler, GetJobByIdHandler getJobByIdHandler, ApplyToJobHandler applyToJobHandler, GetMyApplicationsHandler getMyApplicationsHandler, GetJobApplicantsHandler getJobApplicantsHandler, UpdateJobHandler updateJobHandler, CloseJobHandler closeJobHandler)
         {
             this.createJobHandler = createJobHandler;
             this.getJobsHandler = getJobsHandler;
@@ -32,6 +36,8 @@ namespace JobBoard.Api.Controllers
             this.applyToJobHandler = applyToJobHandler;
             this.getMyApplicationsHandler = getMyApplicationsHandler;
             this.getJobApplicantsHandler = getJobApplicantsHandler;
+            this.updateJobHandler = updateJobHandler;
+            this.closeJobHandler = closeJobHandler;
         }
         // Public browsing (docs/03-requirements.md): the class-level [Authorize] is overridden here.
         [HttpGet]
@@ -145,6 +151,60 @@ namespace JobBoard.Api.Controllers
                 return NotFound();
             }
             return Ok(applicants);
+        }
+
+        [HttpPut("{jobId:int}")]
+        [Authorize(Roles = "Employer")]
+        [ProducesResponseType(typeof(JobResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> UpdateJob(int jobId, UpdateJobCommand command)
+        {
+            // The employer is identified ONLY by the validated token. The body has no EmployerId.
+            // Ownership is checked in the handler; someone else's job looks exactly like a missing one.
+            var employerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(employerId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await updateJobHandler.Handle(jobId, command, employerId);
+            return result.Status switch
+            {
+                UpdateJobStatus.Updated => Ok(result.Job),
+                UpdateJobStatus.JobNotFound => NotFound(),
+                UpdateJobStatus.JobClosed => Problem(
+                    statusCode: StatusCodes.Status409Conflict,
+                    title: "Job is closed",
+                    detail: "A closed job can't be edited."),
+                _ => StatusCode(StatusCodes.Status500InternalServerError)
+            };
+        }
+
+        // Closes (archives) the job instead of deleting it: the row and every application on it are kept.
+        [HttpPost("{jobId:int}/close")]
+        [Authorize(Roles = "Employer")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> CloseJob(int jobId)
+        {
+            var employerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(employerId))
+            {
+                return Unauthorized();
+            }
+
+            var closed = await closeJobHandler.Handle(jobId, employerId);
+            if (!closed)
+            {
+                return NotFound();
+            }
+            return NoContent();
         }
     }
 }

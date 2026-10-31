@@ -1,10 +1,12 @@
 using JobBoard.Application.Interfaces;
 using JobBoard.Application.Jobs.ApplyToJob;
+using JobBoard.Application.Jobs.CloseJob;
 using JobBoard.Application.Jobs.CreateJob;
 using JobBoard.Application.Jobs.GetJobById;
 using JobBoard.Application.Jobs.GetJobApplicants;
 using JobBoard.Application.Jobs.GetJobs;
 using JobBoard.Application.Jobs.GetMyApplications;
+using JobBoard.Application.Jobs.UpdateJob;
 using JobBoard.Application.Services;
 using JobBoard.Infrastructure.Data;
 using JobBoard.Infrastructure.Repositories;
@@ -52,6 +54,8 @@ builder.Services.AddScoped<IJobApplicationRepository, JobApplicationRepository>(
 builder.Services.AddScoped<ApplyToJobHandler>();
 builder.Services.AddScoped<GetMyApplicationsHandler>();
 builder.Services.AddScoped<GetJobApplicantsHandler>();
+builder.Services.AddScoped<UpdateJobHandler>();
+builder.Services.AddScoped<CloseJobHandler>();
 builder.Services.AddScoped<RoleInitializer>();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddScoped<IIdentityService, IdentityService>();
@@ -112,5 +116,8 @@ app.Run();
   "password": "Password123!"
 
 
-TestUser@12345
+{
+  "email": "ali@example.com",
+  "password": "TestUser@12345"
+}
 }*/

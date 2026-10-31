@@ -23,5 +23,8 @@ namespace JobBoard.Domain.Entities
         [Required]
         public DateTimeOffset PostedAt{ get; set; }
         public String? SalaryRange { get; set; }
+        // null = open. Set when the employer closes the job. A closed job is hidden from public
+        // browsing and accepts no new applications, but the row (and its applications) is kept.
+        public DateTimeOffset? ClosedAt { get; set; }
     }
 }

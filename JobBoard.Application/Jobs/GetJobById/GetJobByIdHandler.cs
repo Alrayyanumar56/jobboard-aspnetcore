@@ -12,11 +12,15 @@ namespace JobBoard.Application.Jobs.GetJobById
             this.jobRepository = jobRepository;
         }
 
-        // Returns null when no job has this id; the controller turns that into a 404.
+        // Returns null when no job has this id, or the job is closed; the controller turns that into a 404.
         public async Task<JobResponse?> Handle(int id)
         {
             var job = await jobRepository.GetJobById(id);
-            return job?.ToResponse();
+            if (job == null || job.ClosedAt != null)
+            {
+                return null;
+            }
+            return job.ToResponse();
         }
     }
 }
