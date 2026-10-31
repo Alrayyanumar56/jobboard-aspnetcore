@@ -43,6 +43,25 @@ namespace JobBoard.Infrastructure.Repositories
                 return false;
             }
         }
+        public async Task<List<JobApplicantResponse>> GetApplicantsByJob(int jobId)
+        {
+            // One query: join to the Identity users table, but select ONLY the email from it,
+            // so no password hash or other Identity column is ever read.
+            var query = from a in dbContext.JobApplication
+                        join u in dbContext.Users on a.JobSeekerId equals u.Id
+                        where a.JobId == jobId
+                        orderby a.ApplicationDate descending
+                        select new JobApplicantResponse
+                        {
+                            Id = a.Id,
+                            JobId = a.JobId,
+                            ApplicantEmail = u.Email ?? string.Empty,
+                            ApplicationDate = a.ApplicationDate
+                        };
+
+            return await query.ToListAsync();
+        }
+
         public async Task<List<MyApplicationResponse>> GetApplicationsByJobSeeker(string jobSeekerId)
         {
             // One query: join to Job for the title and select only the four columns the response needs.

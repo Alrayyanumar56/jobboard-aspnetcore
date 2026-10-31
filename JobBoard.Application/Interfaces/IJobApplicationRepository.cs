@@ -10,5 +10,8 @@ namespace JobBoard.Application.Interfaces
         // Returns false (instead of throwing) when the unique (JobId, JobSeekerId) index rejects a duplicate.
         public Task<bool> TryAddApplication(JobApplication application);
         public Task<List<MyApplicationResponse>> GetApplicationsByJobSeeker(string jobSeekerId);
+
+        // Applicants for one job (newest first). Does NOT check who owns the job: the handler does that.
+        public Task<List<JobApplicantResponse>> GetApplicantsByJob(int jobId);
     }
 }

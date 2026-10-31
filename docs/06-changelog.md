@@ -19,10 +19,10 @@ Check this FIRST when sitting down after any gap of more than a couple days.
 - [x] Swagger set up and confirmed working (`/swagger` loads, at least one endpoint visible)
 - [x] `JobApplication` entity created and reasoned through
 - [x] `/DTOs` in Application, request/response shapes in place
-- [ ] Employer: create job posting (via API)
-- [ ] Employer: get only own postings
-- [ ] Employer: edit/delete own posting
-- [ ] **Security test passed:** Employer B cannot edit Employer A's job via direct API call
+- [x] Employer: create job posting (via API)
+- [x] Employer: get only own postings
+- [x] Employer: edit/delete own posting
+- [] **Security test passed:** Employer B cannot edit Employer A's job via direct API call
 - [ ] Job Seeker: public browse endpoint (no auth required)
 - [ ] Job Seeker: filter by Job Type and Location
 - [ ] Job Seeker: apply (auth required)

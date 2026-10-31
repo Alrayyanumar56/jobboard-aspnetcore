@@ -2,6 +2,7 @@
 using JobBoard.Application.Jobs.ApplyToJob;
 using JobBoard.Application.Jobs.CreateJob;
 using JobBoard.Application.Jobs.GetJobById;
+using JobBoard.Application.Jobs.GetJobApplicants;
 using JobBoard.Application.Jobs.GetJobs;
 using JobBoard.Application.Jobs.GetMyApplications;
 using Microsoft.AspNetCore.Authorization;
@@ -21,14 +22,16 @@ namespace JobBoard.Api.Controllers
         private readonly GetJobByIdHandler getJobByIdHandler;
         private readonly ApplyToJobHandler applyToJobHandler;
         private readonly GetMyApplicationsHandler getMyApplicationsHandler;
+        private readonly GetJobApplicantsHandler getJobApplicantsHandler;
 
-        public JobController(CreateJobHandler createJobHandler, GetJobsHandler getJobsHandler, GetJobByIdHandler getJobByIdHandler, ApplyToJobHandler applyToJobHandler, GetMyApplicationsHandler getMyApplicationsHandler)
+        public JobController(CreateJobHandler createJobHandler, GetJobsHandler getJobsHandler, GetJobByIdHandler getJobByIdHandler, ApplyToJobHandler applyToJobHandler, GetMyApplicationsHandler getMyApplicationsHandler, GetJobApplicantsHandler getJobApplicantsHandler)
         {
             this.createJobHandler = createJobHandler;
             this.getJobsHandler = getJobsHandler;
             this.getJobByIdHandler = getJobByIdHandler;
             this.applyToJobHandler = applyToJobHandler;
             this.getMyApplicationsHandler = getMyApplicationsHandler;
+            this.getJobApplicantsHandler = getJobApplicantsHandler;
         }
         // Public browsing (docs/03-requirements.md): the class-level [Authorize] is overridden here.
         [HttpGet]
@@ -117,6 +120,31 @@ namespace JobBoard.Api.Controllers
 
             var applications = await getMyApplicationsHandler.Handle(jobSeekerId);
             return Ok(applications);
+        }
+
+        // Same path as POST {jobId}/applications; the HTTP verb tells them apart.
+        [HttpGet("{jobId:int}/applications")]
+        [Authorize(Roles = "Employer")]
+        [ProducesResponseType(typeof(List<JobApplicantResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetJobApplicants(int jobId)
+        {
+            // The employer is identified ONLY by the validated token. Ownership of the job
+            // is checked in the handler; a job that isn't theirs looks exactly like a missing job.
+            var employerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(employerId))
+            {
+                return Unauthorized();
+            }
+
+            var applicants = await getJobApplicantsHandler.Handle(jobId, employerId);
+            if (applicants == null)
+            {
+                return NotFound();
+            }
+            return Ok(applicants);
         }
     }
 }
