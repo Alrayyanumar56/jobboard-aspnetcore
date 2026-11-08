@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using JobBoard.Domain.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace JobBoard.Domain.Entities
 {
@@ -11,5 +12,10 @@ namespace JobBoard.Domain.Entities
         [Required]
         public string JobSeekerId { get; set; } = string.Empty;
         public DateTimeOffset ApplicationDate { get; set; }
+
+        // Current status and when it last changed. Only changed through
+        // IJobApplicationRepository.TryChangeStatus, which also records a JobApplicationStatusHistory row.
+        public ApplicationStatus Status { get; set; } = ApplicationStatus.Applied;
+        public DateTimeOffset StatusChangedAt { get; set; }
     }
 }

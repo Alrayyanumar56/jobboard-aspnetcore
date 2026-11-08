@@ -83,6 +83,12 @@ namespace JobBoard.Infrastructure.Migrations
                         .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("StatusChangedAt")
+                        .HasColumnType("datetimeoffset");
+
                     b.HasKey("Id");
 
                     b.HasIndex("JobSeekerId");
@@ -91,6 +97,38 @@ namespace JobBoard.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("JobApplication");
+                });
+
+            modelBuilder.Entity("JobBoard.Domain.Entities.JobApplicationStatusHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("ChangedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ChangedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("FromStatus")
+                        .HasColumnType("int");
+
+                    b.Property<int>("JobApplicationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ToStatus")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobApplicationId");
+
+                    b.ToTable("JobApplicationStatusHistory");
                 });
 
             modelBuilder.Entity("JobBoard.Infrastructure.Data.ApplicationUser", b =>
@@ -302,6 +340,15 @@ namespace JobBoard.Infrastructure.Migrations
                     b.HasOne("JobBoard.Infrastructure.Data.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("JobSeekerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("JobBoard.Domain.Entities.JobApplicationStatusHistory", b =>
+                {
+                    b.HasOne("JobBoard.Domain.Entities.JobApplication", null)
+                        .WithMany()
+                        .HasForeignKey("JobApplicationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

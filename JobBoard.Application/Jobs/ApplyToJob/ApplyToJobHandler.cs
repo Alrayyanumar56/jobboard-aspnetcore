@@ -1,6 +1,7 @@
 ﻿using JobBoard.Application.DTOs;
 using JobBoard.Application.Interfaces;
 using JobBoard.Domain.Entities;
+using JobBoard.Domain.Enums;
 
 namespace JobBoard.Application.Jobs.ApplyToJob
 {
@@ -32,11 +33,15 @@ namespace JobBoard.Application.Jobs.ApplyToJob
                 return ApplyToJobResult.AlreadyApplied();
             }
 
+            // Every application starts as Applied, and that moment is also its first status timestamp.
+            var appliedAt = DateTimeOffset.UtcNow;
             var application = new JobApplication
             {
                 JobId = jobId,
                 JobSeekerId = jobSeekerId,
-                ApplicationDate = DateTimeOffset.UtcNow
+                ApplicationDate = appliedAt,
+                Status = ApplicationStatus.Applied,
+                StatusChangedAt = appliedAt
             };
 
             // Two simultaneous requests can both pass the check above. The unique index in the

@@ -1,3 +1,5 @@
+using JobBoard.Domain.Enums;
+
 namespace JobBoard.Application.DTOs
 {
     // One applicant on one of the employer's jobs.
@@ -8,5 +10,7 @@ namespace JobBoard.Application.DTOs
         public int JobId { get; set; }
         public string ApplicantEmail { get; set; } = string.Empty;
         public DateTimeOffset ApplicationDate { get; set; }
+        public ApplicationStatus Status { get; set; }
+        public DateTimeOffset StatusChangedAt { get; set; }
     }
 }

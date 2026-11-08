@@ -17,6 +17,8 @@ namespace JobBoard.Infrastructure.Data
             { get; set; }
         public DbSet<JobApplication> JobApplication
         { get; set; }
+        public DbSet<JobApplicationStatusHistory> JobApplicationStatusHistory
+        { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -34,6 +36,15 @@ namespace JobBoard.Infrastructure.Data
 
                 // One application per JobSeeker per Job, guaranteed by the database itself.
                 entity.HasIndex(a => new { a.JobId, a.JobSeekerId }).IsUnique();
+            });
+
+            modelBuilder.Entity<JobApplicationStatusHistory>(entity =>
+            {
+                // Same size as the user ids it stores. Not a foreign key on purpose: see ChangedByUserId.
+                entity.Property(h => h.ChangedByUserId).HasMaxLength(450);
+
+                // History belongs to its application: if an application is ever removed, its history goes with it.
+                entity.HasOne<JobApplication>().WithMany().HasForeignKey(h => h.JobApplicationId);
             });
         }
     }
