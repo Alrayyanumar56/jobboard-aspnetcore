@@ -22,5 +22,9 @@ namespace JobBoard.Application.Interfaces
         // Returns false (and writes nothing) when the application is no longer in `from`, meaning
         // another request changed it after the handler read it.
         public Task<bool> TryChangeStatus(int applicationId, ApplicationStatus from, ApplicationStatus to, string changedByUserId, DateTimeOffset changedAt);
+
+        // Status changes of one application, oldest first. Empty when it never changed status.
+        // Does NOT check who owns the application: the handler does that.
+        public Task<List<ApplicationStatusHistoryResponse>> GetStatusHistory(int applicationId);
     }
 }

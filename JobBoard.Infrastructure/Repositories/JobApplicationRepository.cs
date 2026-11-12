@@ -125,5 +125,24 @@ namespace JobBoard.Infrastructure.Repositories
             await transaction.CommitAsync();
             return true;
         }
+
+        public async Task<List<ApplicationStatusHistoryResponse>> GetStatusHistory(int applicationId)
+        {
+            // Read-only projection straight to the DTO. Id is the tiebreaker: two changes can share a
+            // ChangedAt, but Id only ever increases, so the order is always stable.
+            return await dbContext.JobApplicationStatusHistory
+                .AsNoTracking()
+                .Where(h => h.JobApplicationId == applicationId)
+                .OrderBy(h => h.ChangedAt)
+                .ThenBy(h => h.Id)
+                .Select(h => new ApplicationStatusHistoryResponse
+                {
+                    FromStatus = h.FromStatus,
+                    ToStatus = h.ToStatus,
+                    ChangedAt = h.ChangedAt,
+                    ChangedByUserId = h.ChangedByUserId
+                })
+                .ToListAsync();
+        }
     }
 }

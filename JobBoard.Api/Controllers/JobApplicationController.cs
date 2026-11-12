@@ -1,5 +1,6 @@
 using JobBoard.Application.DTOs;
 using JobBoard.Application.Jobs;
+using JobBoard.Application.Jobs.GetApplicationHistory;
 using JobBoard.Application.Jobs.UpdateApplicationStatus;
 using JobBoard.Application.Jobs.WithdrawApplication;
 using Microsoft.AspNetCore.Authorization;
@@ -18,11 +19,13 @@ namespace JobBoard.Api.Controllers
     {
         private readonly UpdateApplicationStatusHandler updateApplicationStatusHandler;
         private readonly WithdrawApplicationHandler withdrawApplicationHandler;
+        private readonly GetApplicationHistoryHandler getApplicationHistoryHandler;
 
-        public JobApplicationController(UpdateApplicationStatusHandler updateApplicationStatusHandler, WithdrawApplicationHandler withdrawApplicationHandler)
+        public JobApplicationController(UpdateApplicationStatusHandler updateApplicationStatusHandler, WithdrawApplicationHandler withdrawApplicationHandler, GetApplicationHistoryHandler getApplicationHistoryHandler)
         {
             this.updateApplicationStatusHandler = updateApplicationStatusHandler;
             this.withdrawApplicationHandler = withdrawApplicationHandler;
+            this.getApplicationHistoryHandler = getApplicationHistoryHandler;
         }
 
         [HttpPatch("{applicationId:int}/status")]
@@ -66,6 +69,33 @@ namespace JobBoard.Api.Controllers
 
             var result = await withdrawApplicationHandler.Handle(applicationId, jobSeekerId);
             return ToActionResult(result);
+        }
+
+        [HttpGet("{applicationId:int}/history")]
+        [Authorize(Roles = "Employer,JobSeeker")]
+        [ProducesResponseType(typeof(List<ApplicationStatusHistoryResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetHistory(int applicationId)
+        {
+            // The caller and their role come ONLY from the validated token. Whether this application
+            // is theirs (their own, or one of their job's) is checked in the handler.
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var history = await getApplicationHistoryHandler.Handle(applicationId, userId, User.IsInRole("Employer"));
+
+            // Missing and not-yours both land here, so the response never reveals which ids exist.
+            if (history == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(history);
         }
 
         private IActionResult ToActionResult(ChangeApplicationStatusResult result)
