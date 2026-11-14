@@ -19,6 +19,8 @@ namespace JobBoard.Infrastructure.Data
         { get; set; }
         public DbSet<JobApplicationStatusHistory> JobApplicationStatusHistory
         { get; set; }
+        public DbSet<CandidateProfile> CandidateProfile
+        { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -45,6 +47,18 @@ namespace JobBoard.Infrastructure.Data
 
                 // History belongs to its application: if an application is ever removed, its history goes with it.
                 entity.HasOne<JobApplication>().WithMany().HasForeignKey(h => h.JobApplicationId);
+            });
+
+            modelBuilder.Entity<CandidateProfile>(entity =>
+            {
+                // Must match AspNetUsers.Id (nvarchar(450)) so it can be a foreign key and part of an index.
+                entity.Property(p => p.JobSeekerId).HasMaxLength(450);
+
+                // Required relationship; deleting a user also removes their profile.
+                entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(p => p.JobSeekerId);
+
+                // One profile per JobSeeker, guaranteed by the database itself.
+                entity.HasIndex(p => p.JobSeekerId).IsUnique();
             });
         }
     }
