@@ -21,6 +21,8 @@ namespace JobBoard.Infrastructure.Data
         { get; set; }
         public DbSet<CandidateProfile> CandidateProfile
         { get; set; }
+        public DbSet<CandidateEducation> CandidateEducation
+        { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -59,6 +61,19 @@ namespace JobBoard.Infrastructure.Data
 
                 // One profile per JobSeeker, guaranteed by the database itself.
                 entity.HasIndex(p => p.JobSeekerId).IsUnique();
+            });
+
+            modelBuilder.Entity<CandidateEducation>(entity =>
+            {
+                // Required relationship: many education records per profile. Deleting a profile also
+                // removes its records. No collection property on CandidateProfile on purpose, so the
+                // existing profile entity and code stay untouched (same style as JobApplicationStatusHistory).
+                entity.HasOne<CandidateProfile>().WithMany().HasForeignKey(e => e.CandidateProfileId);
+
+                // The API already rejects EndDate < StartDate; this makes the database refuse it too.
+                entity.ToTable(t => t.HasCheckConstraint(
+                    "CK_CandidateEducation_EndDate_NotBeforeStartDate",
+                    "[EndDate] IS NULL OR [EndDate] >= [StartDate]"));
             });
         }
     }

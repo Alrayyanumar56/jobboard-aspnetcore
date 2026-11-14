@@ -17,6 +17,10 @@ using JobBoard.Application.Jobs.WithdrawApplication;
 using JobBoard.Application.Profiles.CreateCandidateProfile;
 using JobBoard.Application.Profiles.GetMyCandidateProfile;
 using JobBoard.Application.Profiles.UpdateCandidateProfile;
+using JobBoard.Application.Education.CreateCandidateEducation;
+using JobBoard.Application.Education.DeleteCandidateEducation;
+using JobBoard.Application.Education.GetMyCandidateEducation;
+using JobBoard.Application.Education.UpdateCandidateEducation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -69,6 +73,11 @@ builder.Services.AddScoped<ICandidateProfileRepository, CandidateProfileReposito
 builder.Services.AddScoped<GetMyCandidateProfileHandler>();
 builder.Services.AddScoped<CreateCandidateProfileHandler>();
 builder.Services.AddScoped<UpdateCandidateProfileHandler>();
+builder.Services.AddScoped<ICandidateEducationRepository, CandidateEducationRepository>();
+builder.Services.AddScoped<CreateCandidateEducationHandler>();
+builder.Services.AddScoped<GetMyCandidateEducationHandler>();
+builder.Services.AddScoped<UpdateCandidateEducationHandler>();
+builder.Services.AddScoped<DeleteCandidateEducationHandler>();
 builder.Services.AddScoped<RoleInitializer>();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddScoped<IIdentityService, IdentityService>();
@@ -131,6 +140,11 @@ app.Run();
 
 {
   "email": "ali@example.com",
+  "password": "TestUser@12345"
+}
+
+{
+  "email": "ahmedali@example.com",
   "password": "TestUser@12345"
 }
 }*/

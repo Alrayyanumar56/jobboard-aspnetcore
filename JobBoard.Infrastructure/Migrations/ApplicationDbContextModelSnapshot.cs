@@ -22,6 +22,52 @@ namespace JobBoard.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("JobBoard.Domain.Entities.CandidateEducation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CandidateProfileId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Degree")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("FieldOfStudy")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Institution")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CandidateProfileId");
+
+                    b.ToTable("CandidateEducation", t =>
+                        {
+                            t.HasCheckConstraint("CK_CandidateEducation_EndDate_NotBeforeStartDate", "[EndDate] IS NULL OR [EndDate] >= [StartDate]");
+                        });
+                });
+
             modelBuilder.Entity("JobBoard.Domain.Entities.CandidateProfile", b =>
                 {
                     b.Property<int>("Id")
@@ -375,6 +421,15 @@ namespace JobBoard.Infrastructure.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("JobBoard.Domain.Entities.CandidateEducation", b =>
+                {
+                    b.HasOne("JobBoard.Domain.Entities.CandidateProfile", null)
+                        .WithMany()
+                        .HasForeignKey("CandidateProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("JobBoard.Domain.Entities.CandidateProfile", b =>
