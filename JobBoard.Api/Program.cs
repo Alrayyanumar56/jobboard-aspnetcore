@@ -1,3 +1,4 @@
+using JobBoard.Api.RateLimiting;
 using JobBoard.Application;
 using JobBoard.Infrastructure;
 using JobBoard.Infrastructure.Data;
@@ -48,6 +49,9 @@ builder.Services.AddSwaggerGen(options =>
 // Each layer registers its own services (see DependencyInjection.cs in Application and Infrastructure).
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// Per-IP limit on login/register/change-password (see RateLimiting/RateLimitPolicies.cs).
+builder.Services.AddJobBoardRateLimiting();
 
 // CORS: which browser origins (the React frontend) may call this API. Configured, not hard-coded:
 // appsettings.Development.json lists the local dev servers, and on Azure the deployed frontend's URL
@@ -125,6 +129,9 @@ if (app.Environment.IsDevelopment()|| app.Configuration.GetValue<bool>("EnableSw
 
 app.UseHttpsRedirection();
 app.UseCors(FrontendCorsPolicy);
+// After routing (implicit in WebApplication) so it can see each endpoint's [EnableRateLimiting], and
+// before authentication so refused requests cost as little as possible.
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

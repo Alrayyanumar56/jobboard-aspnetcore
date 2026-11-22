@@ -1,3 +1,4 @@
+using JobBoard.Application.Auth.ChangePassword;
 using JobBoard.Application.Education.CreateCandidateEducation;
 using JobBoard.Application.Education.DeleteCandidateEducation;
 using JobBoard.Application.Education.GetMyCandidateEducation;
@@ -6,6 +7,7 @@ using JobBoard.Application.Interfaces;
 using JobBoard.Application.Jobs.ApplyToJob;
 using JobBoard.Application.Jobs.CloseJob;
 using JobBoard.Application.Jobs.CreateJob;
+using JobBoard.Application.Jobs.GetApplicantProfile;
 using JobBoard.Application.Jobs.GetApplicationHistory;
 using JobBoard.Application.Jobs.GetJobApplicants;
 using JobBoard.Application.Jobs.GetJobById;
@@ -33,6 +35,7 @@ namespace JobBoard.Application
             // Auth use cases
             services.AddScoped<IRegistrationService, RegistrationService>();
             services.AddScoped<ILoginService, LoginService>();
+            services.AddScoped<ChangePasswordHandler>();
 
             // Jobs
             services.AddScoped<CreateJobHandler>();
@@ -49,6 +52,7 @@ namespace JobBoard.Application
             services.AddScoped<UpdateApplicationStatusHandler>();
             services.AddScoped<WithdrawApplicationHandler>();
             services.AddScoped<GetApplicationHistoryHandler>();
+            services.AddScoped<GetApplicantProfileHandler>();
 
             // Candidate profile
             services.AddScoped<GetMyCandidateProfileHandler>();

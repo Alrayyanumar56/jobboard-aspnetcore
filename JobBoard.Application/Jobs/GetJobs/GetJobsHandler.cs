@@ -1,6 +1,5 @@
 ﻿using JobBoard.Application.DTOs;
 using JobBoard.Application.Interfaces;
-using JobBoard.Domain.Enums;
 
 namespace JobBoard.Application.Jobs.GetJobs
 {
@@ -13,11 +12,20 @@ namespace JobBoard.Application.Jobs.GetJobs
             this.jobRepository = jobRepository;
         }
 
-        // Both filters are optional; null means "any".
-        public async Task<List<JobResponse>> Handle(JobType? jobType = null, Location? location = null)
+        // Public listing: one page of open jobs, newest first.
+        public async Task<PagedResult<JobResponse>> Handle(GetJobsQuery query)
         {
-            var jobs = await jobRepository.GetAllJobs(jobType, location);
-            return jobs.Select(j => j.ToResponse()).ToList();
+            var search = string.IsNullOrWhiteSpace(query.Search) ? null : query.Search.Trim();
+
+            var (jobs, totalCount) = await jobRepository.GetOpenJobsPage(query.JobType, query.Location, search, query.Page, query.PageSize);
+
+            return new PagedResult<JobResponse>
+            {
+                Items = jobs.Select(j => j.ToResponse()).ToList(),
+                TotalCount = totalCount,
+                Page = query.Page,
+                PageSize = query.PageSize
+            };
         }
     }
 }

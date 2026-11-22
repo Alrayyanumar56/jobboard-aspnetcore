@@ -1,4 +1,5 @@
 ﻿using JobBoard.Application.Interfaces;
+using JobBoard.Application.Auth.ChangePassword;
 using JobBoard.Application.DTOs;
 using JobBoard.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
@@ -8,11 +9,13 @@ namespace JobBoard.Infrastructure.Services
     public class IdentityService : IIdentityService
     {
         private readonly UserManager<ApplicationUser> userManager;
+        private readonly SignInManager<ApplicationUser> signInManager;
         private readonly IJWTService jWTService;
 
-        public IdentityService(UserManager<ApplicationUser> userManager,IJWTService jWTService)
+        public IdentityService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IJWTService jWTService)
         {
             this.userManager = userManager;
+            this.signInManager = signInManager;
             this.jWTService = jWTService;
         }
         public async Task<RegistrationResult> CreateUser(String Email, String Password, UserRole Role)
@@ -47,8 +50,14 @@ namespace JobBoard.Infrastructure.Services
                 return null;
             }
 
-            bool PassResult = await userManager.CheckPasswordAsync(user, Password);
-            if (PassResult == false)
+            // CheckPasswordSignInAsync (unlike UserManager.CheckPasswordAsync) applies lockout: a wrong
+            // password counts a failed attempt, enough of them lock the account for a while (options in
+            // AddInfrastructure), a locked account is refused even with the right password, and a
+            // successful check resets the counter. It issues no cookie: the API still hands out a JWT.
+            // Locked out gives the same null (401) as a wrong password, so the response never reveals
+            // whether an email is registered or locked.
+            var signInResult = await signInManager.CheckPasswordSignInAsync(user, Password, lockoutOnFailure: true);
+            if (!signInResult.Succeeded)
             {
                 return null;
             }
@@ -68,6 +77,30 @@ namespace JobBoard.Infrastructure.Services
             loginResponse.Email = user.Email ?? Email;
             loginResponse.Role = parsedRole;
             return loginResponse;
+        }
+
+        public async Task<ChangePasswordResult> ChangePassword(string userId, string currentPassword, string newPassword)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return ChangePasswordResult.UserNotFound();
+            }
+
+            // Verifies the current password, validates the new one against the password rules, stores the
+            // new hash and refreshes the security stamp, all in one call.
+            var result = await userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors
+                    .GroupBy(e => e.Code == "PasswordMismatch" ? "CurrentPassword"
+                        : e.Code.StartsWith("Password", StringComparison.Ordinal) ? "NewPassword"
+                        : "ChangePassword")
+                    .ToDictionary(g => g.Key, g => g.Select(e => e.Description).ToArray());
+                return ChangePasswordResult.Rejected(errors);
+            }
+
+            return ChangePasswordResult.Changed();
         }
 
         // Turns Identity's error list into "field -> messages" so the API can return a standard

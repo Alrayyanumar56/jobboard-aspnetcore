@@ -14,9 +14,9 @@ namespace JobBoard.Application.Jobs.GetMyJobs
 
         // employerId comes from the authenticated user's JWT (resolved in the controller),
         // never from the request. An employer with no jobs gets an empty list.
-        public async Task<List<MyJobResponse>> Handle(string employerId)
+        public async Task<List<MyJobResponse>> Handle(string employerId, JobStatusFilter status = JobStatusFilter.All)
         {
-            return await jobRepository.GetJobsByEmployer(employerId);
+            return await jobRepository.GetJobsByEmployer(employerId, status);
         }
     }
 }

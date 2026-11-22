@@ -1,5 +1,6 @@
 using JobBoard.Application.DTOs;
 using JobBoard.Application.Interfaces;
+using JobBoard.Application.Jobs.GetMyJobs;
 using JobBoard.Domain.Entities;
 using JobBoard.Domain.Enums;
 
@@ -18,15 +19,20 @@ namespace JobBoard.Tests.Fakes
             return Task.FromResult(job);
         }
 
-        public Task<List<Job>> GetAllJobs(JobType? jobType, Location? location)
+        public Task<(List<Job> Items, int TotalCount)> GetOpenJobsPage(JobType? jobType, Location? location, string? search, int page, int pageSize)
         {
-            var result = Jobs
+            var matching = Jobs
                 .Where(j => j.ClosedAt == null)
                 .Where(j => !jobType.HasValue || j.JobType == jobType.Value)
                 .Where(j => !location.HasValue || j.JobLocation == location.Value)
+                .Where(j => string.IsNullOrEmpty(search)
+                    || j.Title.Contains(search, StringComparison.OrdinalIgnoreCase)
+                    || j.Description.Contains(search, StringComparison.OrdinalIgnoreCase))
                 .OrderByDescending(j => j.PostedAt)
+                .ThenByDescending(j => j.Id)
                 .ToList();
-            return Task.FromResult(result);
+            var items = matching.Skip((page - 1) * pageSize).Take(pageSize).Select(Copy).ToList();
+            return Task.FromResult((items, matching.Count));
         }
 
         // Returns a COPY, like AsNoTracking: changing the result must not change the stored job.
@@ -36,10 +42,13 @@ namespace JobBoard.Tests.Fakes
             return Task.FromResult(job == null ? null : Copy(job));
         }
 
-        public Task<List<MyJobResponse>> GetJobsByEmployer(string employerId)
+        public Task<List<MyJobResponse>> GetJobsByEmployer(string employerId, JobStatusFilter status)
         {
             var result = Jobs
                 .Where(j => j.EmployerId == employerId)
+                .Where(j => status == JobStatusFilter.All
+                    || (status == JobStatusFilter.Open && j.ClosedAt == null)
+                    || (status == JobStatusFilter.Closed && j.ClosedAt != null))
                 .OrderByDescending(j => j.PostedAt)
                 .Select(j => new MyJobResponse
                 {
