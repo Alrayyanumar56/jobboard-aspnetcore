@@ -1,5 +1,6 @@
 using JobBoard.Application.DTOs;
 using JobBoard.Application.Jobs;
+using JobBoard.Application.Jobs.GetApplicantProfile;
 using JobBoard.Application.Jobs.GetApplicationHistory;
 using JobBoard.Application.Jobs.UpdateApplicationStatus;
 using JobBoard.Application.Jobs.WithdrawApplication;
@@ -20,12 +21,14 @@ namespace JobBoard.Api.Controllers
         private readonly UpdateApplicationStatusHandler updateApplicationStatusHandler;
         private readonly WithdrawApplicationHandler withdrawApplicationHandler;
         private readonly GetApplicationHistoryHandler getApplicationHistoryHandler;
+        private readonly GetApplicantProfileHandler getApplicantProfileHandler;
 
-        public JobApplicationController(UpdateApplicationStatusHandler updateApplicationStatusHandler, WithdrawApplicationHandler withdrawApplicationHandler, GetApplicationHistoryHandler getApplicationHistoryHandler)
+        public JobApplicationController(UpdateApplicationStatusHandler updateApplicationStatusHandler, WithdrawApplicationHandler withdrawApplicationHandler, GetApplicationHistoryHandler getApplicationHistoryHandler, GetApplicantProfileHandler getApplicantProfileHandler)
         {
             this.updateApplicationStatusHandler = updateApplicationStatusHandler;
             this.withdrawApplicationHandler = withdrawApplicationHandler;
             this.getApplicationHistoryHandler = getApplicationHistoryHandler;
+            this.getApplicantProfileHandler = getApplicantProfileHandler;
         }
 
         [HttpPatch("{applicationId:int}/status")]
@@ -96,6 +99,34 @@ namespace JobBoard.Api.Controllers
             }
 
             return Ok(history);
+        }
+
+        // The applicant's full candidate profile and education, for the employer who owns the job.
+        [HttpGet("{applicationId:int}/candidate")]
+        [Authorize(Roles = "Employer")]
+        [ProducesResponseType(typeof(ApplicantProfileResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetCandidate(int applicationId)
+        {
+            // The employer is identified ONLY by the validated token. Ownership of the job this
+            // application belongs to is checked in the handler.
+            var employerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(employerId))
+            {
+                return Unauthorized();
+            }
+
+            var candidate = await getApplicantProfileHandler.Handle(applicationId, employerId);
+
+            // Missing and not-yours both land here, so the response never reveals which ids exist.
+            if (candidate == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(candidate);
         }
 
         private IActionResult ToActionResult(ChangeApplicationStatusResult result)

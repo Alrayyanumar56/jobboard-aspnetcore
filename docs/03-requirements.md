@@ -23,7 +23,7 @@ Scope for the actual API. The bigger product vision (`08-future-vision.md`) does
 - Get their own list of applications.
 
 ### Explicit exclusions from Phase 1
-No resume upload. No messaging. No email notifications. No admin role. No keyword search. No pagination unless a list gets unreasonably long during testing.
+No resume upload. No messaging. No email notifications. No admin role. ~~No keyword search. No pagination~~ — replanned 2026-11-22: the public job list now has paging and keyword search (see decision log).
 
 ### Non-negotiable security rules
 - Server-side role + ownership enforcement on every relevant endpoint — never trust the frontend to hide a button as the only protection.

@@ -1,5 +1,6 @@
 ﻿using JobBoard.Application.DTOs;
 using JobBoard.Application.Interfaces;
+using JobBoard.Application.Jobs.GetMyJobs;
 using JobBoard.Domain.Entities;
 using JobBoard.Domain.Enums;
 using JobBoard.Infrastructure.Data;
@@ -24,7 +25,7 @@ namespace JobBoard.Infrastructure.Repositories
             await dbContext.SaveChangesAsync();
             return job;
         }
-        public async Task<List<Job>> GetAllJobs(JobType? jobType, Location? location)
+        public async Task<(List<Job> Items, int TotalCount)> GetOpenJobsPage(JobType? jobType, Location? location, string? search, int page, int pageSize)
         {
             // Public listing: closed jobs are not shown.
             var query = dbContext.Job
@@ -41,10 +42,24 @@ namespace JobBoard.Infrastructure.Repositories
             {
                 query = query.Where(j => j.JobLocation == location.Value);
             }
+            if (!string.IsNullOrEmpty(search))
+            {
+                // Contains becomes SQL LIKE '%...%' with the value sent as a parameter (no injection);
+                // EF Core escapes %, _ and [ in it. Case-insensitive under SQL Server's default collation.
+                query = query.Where(j => j.Title.Contains(search) || j.Description.Contains(search));
+            }
 
-            return await query
+            // Two queries: the total for the pager, then only the rows of this page.
+            // Id breaks ties between jobs posted at the same moment, so pages never overlap or skip.
+            var totalCount = await query.CountAsync();
+            var items = await query
                 .OrderByDescending(j => j.PostedAt)
+                .ThenByDescending(j => j.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+            return (items, totalCount);
         }
         public async Task<Job?> GetJobById(int id)
         {
@@ -53,13 +68,24 @@ namespace JobBoard.Infrastructure.Repositories
                 .FirstOrDefaultAsync(j => j.Id == id);
         }
 
-        public async Task<List<MyJobResponse>> GetJobsByEmployer(string employerId)
+        public async Task<List<MyJobResponse>> GetJobsByEmployer(string employerId, JobStatusFilter status)
         {
+            var query = dbContext.Job
+                .AsNoTracking()
+                .Where(j => j.EmployerId == employerId);
+
+            if (status == JobStatusFilter.Open)
+            {
+                query = query.Where(j => j.ClosedAt == null);
+            }
+            else if (status == JobStatusFilter.Closed)
+            {
+                query = query.Where(j => j.ClosedAt != null);
+            }
+
             // One query: the applicant count is a correlated COUNT subquery, so the applications
             // themselves are never loaded.
-            return await dbContext.Job
-                .AsNoTracking()
-                .Where(j => j.EmployerId == employerId)
+            return await query
                 .OrderByDescending(j => j.PostedAt)
                 .Select(j => new MyJobResponse
                 {

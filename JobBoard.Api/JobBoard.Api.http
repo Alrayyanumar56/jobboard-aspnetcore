@@ -34,12 +34,38 @@ Content-Type: application/json
   "password": "TestUser@12345"
 }
 
+### Wrong password: send 5 times to lock the account for 15 minutes (still a plain 401);
+### send 11 times within a minute to get 429 Too Many Requests from the rate limiter
+POST {{baseUrl}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "email": "employer@example.com",
+  "password": "Wrong@12345"
+}
+
+### Change my password (204; wrong current password or weak new one gives 400)
+POST {{baseUrl}}/api/Auth/change-password
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "currentPassword": "TestUser@12345",
+  "newPassword": "NewTestUser@12345"
+}
+
 ### Who am I (from the token)
 GET {{baseUrl}}/api/Auth/me
 Authorization: Bearer {{token}}
 
 ### Public job list, optionally filtered
 GET {{baseUrl}}/api/Job?jobType=FullTime&location=Remote
+
+### Public job list: search + paging (response is {items, totalCount, page, pageSize})
+GET {{baseUrl}}/api/Job?search=developer&page=1&pageSize=10
+
+### Public job list: invalid page size (expect 400)
+GET {{baseUrl}}/api/Job?pageSize=500
 
 ### One job
 GET {{baseUrl}}/api/Job/1
@@ -61,8 +87,16 @@ Content-Type: application/json
 GET {{baseUrl}}/api/Job/mine
 Authorization: Bearer {{token}}
 
+### Employer: only my open jobs (also: closed, all)
+GET {{baseUrl}}/api/Job/mine?status=open
+Authorization: Bearer {{token}}
+
 ### Employer: applicants for one of my jobs
 GET {{baseUrl}}/api/Job/1/applications
+Authorization: Bearer {{token}}
+
+### Employer: applicant's candidate profile + education (404 if the job isn't mine)
+GET {{baseUrl}}/api/JobApplication/1/candidate
 Authorization: Bearer {{token}}
 
 ### Employer: move an application forward

@@ -41,16 +41,18 @@ More detail is in [`docs/`](docs): architecture overview, domain model, requirem
 
 **Authentication**
 - Register as an Employer or Job Seeker, log in, receive a JWT (1 hour). `GET /api/Auth/me` returns the current user.
+- Change your own password (current password required).
+- Brute-force protection: login, register and change-password are rate limited per IP (10 requests/minute, then 429), and 5 wrong passwords lock the account for 15 minutes.
 - Registration errors (duplicate email, weak password) come back as field-level validation errors.
 
 **Employers**
 - Create, edit and close their own jobs. Closing is a soft delete: the job disappears from browsing but its applications are kept.
-- See all their jobs (open and closed) with applicant counts.
-- See applicants per job and move each application through the pipeline:
+- See all their jobs with applicant counts, filtered by `open`, `closed` or `all`.
+- See applicants per job, open an applicant's full candidate profile and education, and move each application through the pipeline:
   `Applied → UnderReview → Shortlisted → Interview → Offered → Hired`, or `Rejected` from any open stage. Every change is recorded in a status history.
 
 **Job seekers**
-- Browse open jobs publicly, filter by job type and location.
+- Browse open jobs publicly, paged, with keyword search and filters for job type and location.
 - Apply (once per job), see their applications and status, withdraw before the process ends.
 - Maintain a candidate profile and education history.
 
@@ -61,10 +63,11 @@ More detail is in [`docs/`](docs): architecture overview, domain model, requirem
 | POST | `/api/Auth/register` | anyone | Register (role: `Employer` / `JobSeeker`) |
 | POST | `/api/Auth/login` | anyone | Log in, get a JWT |
 | GET | `/api/Auth/me` | signed in | Current user from the token |
-| GET | `/api/Job?jobType=&location=` | anyone | Open jobs, optional filters |
+| POST | `/api/Auth/change-password` | signed in | Change my password |
+| GET | `/api/Job?jobType=&location=&search=&page=&pageSize=` | anyone | Open jobs, paged (`{items,totalCount,page,pageSize}`), optional search and filters |
 | GET | `/api/Job/{id}` | anyone | One open job |
 | POST | `/api/Job` | Employer | Create a job |
-| GET | `/api/Job/mine` | Employer | My jobs (open and closed) |
+| GET | `/api/Job/mine?status=open\|closed\|all` | Employer | My jobs (default `all`) |
 | PUT | `/api/Job/{jobId}` | Employer (owner) | Edit an open job |
 | POST | `/api/Job/{jobId}/close` | Employer (owner) | Close a job |
 | GET | `/api/Job/{jobId}/applications` | Employer (owner) | Applicants for a job |
@@ -73,6 +76,7 @@ More detail is in [`docs/`](docs): architecture overview, domain model, requirem
 | PATCH | `/api/JobApplication/{id}/status` | Employer (owner) | Move an application forward / reject |
 | PATCH | `/api/JobApplication/{id}/withdraw` | Job Seeker (owner) | Withdraw |
 | GET | `/api/JobApplication/{id}/history` | Employer or Job Seeker (owner) | Status history |
+| GET | `/api/JobApplication/{id}/candidate` | Employer (owner) | Applicant's candidate profile + education |
 | GET / POST / PUT | `/api/CandidateProfile/me`, `/api/CandidateProfile` | Job Seeker | My profile |
 | GET / POST / PUT / DELETE | `/api/CandidateEducation`, `/me`, `/{id}` | Job Seeker | My education records |
 

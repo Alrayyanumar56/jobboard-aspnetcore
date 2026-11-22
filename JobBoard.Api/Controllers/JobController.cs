@@ -44,26 +44,28 @@ namespace JobBoard.Api.Controllers
             this.getMyJobsHandler = getMyJobsHandler;
         }
         // Public browsing (docs/03-requirements.md): the class-level [Authorize] is overridden here.
-        // Optional filters: GET /api/Job?jobType=FullTime&location=Remote. An unknown value
-        // (e.g. jobType=Banana) fails model binding and [ApiController] answers 400.
+        // GET /api/Job?jobType=FullTime&location=Remote&search=dotnet&page=1&pageSize=20
+        // All optional. An unknown enum value (jobType=Banana), page < 1 or pageSize outside 1..50
+        // fails validation and [ApiController] answers 400.
         [HttpGet]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(List<JobResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PagedResult<JobResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetJobs([FromQuery] JobType? jobType, [FromQuery] Location? location)
+        public async Task<IActionResult> GetJobs([FromQuery] GetJobsQuery query)
         {
-            var jobs = await getJobsHandler.Handle(jobType, location);
+            var jobs = await getJobsHandler.Handle(query);
             return Ok(jobs);
         }
 
-        // The calling employer's own jobs, open AND closed, for their dashboard.
+        // The calling employer's own jobs for their dashboard: ?status=open|closed|all (default all).
         // "mine" is a fixed segment, so it can't clash with GET {id:int}.
         [HttpGet("mine")]
         [Authorize(Roles = "Employer")]
         [ProducesResponseType(typeof(List<MyJobResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> GetMyJobs()
+        public async Task<IActionResult> GetMyJobs([FromQuery] JobStatusFilter status = JobStatusFilter.All)
         {
             // Whose jobs to return is decided ONLY by the validated token.
             var employerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -72,7 +74,7 @@ namespace JobBoard.Api.Controllers
                 return Unauthorized();
             }
 
-            var jobs = await getMyJobsHandler.Handle(employerId);
+            var jobs = await getMyJobsHandler.Handle(employerId, status);
             return Ok(jobs);
         }
 

@@ -1,9 +1,12 @@
-﻿using JobBoard.Application.DTOs;
+﻿using JobBoard.Api.RateLimiting;
+using JobBoard.Application.Auth.ChangePassword;
+using JobBoard.Application.DTOs;
 using JobBoard.Application.Interfaces;
 using JobBoard.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace JobBoard.Api.Controllers
@@ -14,15 +17,19 @@ namespace JobBoard.Api.Controllers
     {
         private readonly IRegistrationService registrationService;
         private readonly ILoginService loginService;
+        private readonly ChangePasswordHandler changePasswordHandler;
 
-        public AuthController(IRegistrationService registrationService,ILoginService loginService)
+        public AuthController(IRegistrationService registrationService, ILoginService loginService, ChangePasswordHandler changePasswordHandler)
         {
             this.registrationService = registrationService;
             this.loginService = loginService;
+            this.changePasswordHandler = changePasswordHandler;
         }
         [HttpPost("register")]
+        [EnableRateLimiting(RateLimitPolicies.Auth)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
         public async Task<IActionResult> Register(RegisterRequest registerRequest)
         {
             var result = await registrationService.RegisterUser(registerRequest);
@@ -42,9 +49,12 @@ namespace JobBoard.Api.Controllers
             }
             return ValidationProblem(ModelState);
         }
+        // A wrong password, an unknown email and a locked-out account all give the same 401.
         [HttpPost("login")]
+        [EnableRateLimiting(RateLimitPolicies.Auth)]
         [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
         public async Task<IActionResult> Login(LoginRequest loginRequest)
         {
             var result = await loginService.LoginUser(loginRequest);
@@ -81,6 +91,44 @@ namespace JobBoard.Api.Controllers
                 Email = email,
                 Role = parsedRole
             });
+        }
+
+        // Changes the CALLER's password: the user comes from the token, and the current password is
+        // still required. Tokens issued before the change stay valid until they expire (1 hour).
+        [HttpPost("change-password")]
+        [Authorize]
+        [EnableRateLimiting(RateLimitPolicies.Auth)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
+        public async Task<IActionResult> ChangePassword(ChangePasswordRequest request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await changePasswordHandler.Handle(request, userId);
+            switch (result.Outcome)
+            {
+                case ChangePasswordOutcome.Changed:
+                    return NoContent();
+                case ChangePasswordOutcome.UserNotFound:
+                    return Unauthorized();
+                case ChangePasswordOutcome.Rejected:
+                    foreach (var (field, messages) in result.Errors)
+                    {
+                        foreach (var message in messages)
+                        {
+                            ModelState.AddModelError(field, message);
+                        }
+                    }
+                    return ValidationProblem(ModelState);
+                default:
+                    return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
     }
 }

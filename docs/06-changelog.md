@@ -114,3 +114,11 @@ Check this FIRST when sitting down after any gap of more than a couple days.
 * Did: Moved DI registrations into `AddApplication()` / `AddInfrastructure()`.
 * Did: Added `JobBoard.Tests` (xUnit): status rules and ownership/duplicate checks against in-memory fake repositories.
 * Next: Build, run `dotnet test`, retest in Swagger, redeploy to Azure, add `Cors__AllowedOrigins__0` once the frontend has a URL.
+
+### [2026-11-22] — Backend gaps, batch 1 (no migration)
+* Did: `GET /api/Job/mine?status=open|closed|all` (default `all`).
+* Did: Paging and keyword search on `GET /api/Job` (`page`, `pageSize` max 50, `search`), response is now `{items, totalCount, page, pageSize}`.
+* Did: `GET /api/JobApplication/{id}/candidate`: the job owner sees the applicant's candidate profile and education (404 for anyone else).
+* Did: Rate limiting on login/register/change-password (10/min per IP, 429), Identity lockout (5 failures -> 15 minutes, same 401), `POST /api/Auth/change-password`.
+* Did: Tests for the applicant-profile ownership rules, paging/search, `/mine` status filter and change-password.
+* Next: Retest in Swagger (429 after 10 logins in a minute, lockout after 5 wrong passwords), then batch 2.

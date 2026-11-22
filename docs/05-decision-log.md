@@ -68,6 +68,30 @@ Every time I make a real architectural or design choice, log it here in 3-4 line
 **Why:** A configuration mistake should say exactly what is missing; a transient database error should be a short delay, not a dead app.
 **Status:** Active
 
+### [2026-11-22] — Paging and keyword search on the public job list
+**Context:** Phase 1 excluded both, but the listing will feed a React frontend and grow with demo data.
+**Decision:** `GET /api/Job` takes `page` (default 1), `pageSize` (default 20, max 50) and `search` (Title or Description, SQL `LIKE`), and returns `{items, totalCount, page, pageSize}`. Sorted by `PostedAt` then `Id`, so pages are stable.
+**Why:** An unbounded list gets slower and heavier with every job. Changing the response shape now, before a frontend depends on it, is cheap. Full-text search was not needed yet.
+**Status:** Active
+
+### [2026-11-22] — Brute-force protection: rate limiting + lockout, same 401 for locked accounts
+**Context:** Login, register and the new change-password endpoint accepted unlimited attempts.
+**Decision:** ASP.NET Core's built-in rate limiter, 10 requests per minute per client IP on those three endpoints (429 + `Retry-After`). Identity lockout: 5 wrong passwords lock the account for 15 minutes, applied through `SignInManager.CheckPasswordSignInAsync(lockoutOnFailure: true)`. A locked account gets the same 401 as a wrong password.
+**Why:** Rate limiting slows one client hammering many accounts; lockout protects one account attacked from many IPs. A distinct "locked" response would tell an attacker the email exists. Behind Azure App Service the client IP may need forwarded-headers handling; not done yet.
+**Status:** Active
+
+### [2026-11-22] — Employer sees an applicant's profile only through an application on their own job
+**Context:** Employers need more than name + email to judge applicants.
+**Decision:** `GET /api/JobApplication/{id}/candidate` returns the applicant's profile and education. The handler checks application -> job -> `EmployerId`; missing and not-yours are both 404. Closed jobs and withdrawn applications still count. The response has no JobSeekerId.
+**Why:** The application is the employer's only legitimate link to a candidate, so access is granted through it, never by a seeker id in the URL.
+**Status:** Active
+
+### [2026-11-22] — Change password keeps existing JWTs valid until they expire
+**Context:** JWTs are stateless; the server doesn't check them against the database.
+**Decision:** `POST /api/Auth/change-password` requires the current password and returns 204. Tokens issued before the change keep working for at most 1 hour.
+**Why:** Revocation would need a database check (security stamp) on every request. With 1-hour tokens that cost is not worth it yet.
+**Status:** Active
+
 ### [2026-11-22] — CORS origins from configuration; `/health` without a database check
 **Context:** The React frontend runs on a different origin, so the browser blocks requests without CORS. Azure needs something to ping.
 **Decision:** One CORS policy whose origins come from `Cors:AllowedOrigins` (dev servers in `appsettings.Development.json`, the deployed frontend as `Cors__AllowedOrigins__0` on Azure). No credentials, because the JWT is sent in the `Authorization` header. `/health` is liveness only.

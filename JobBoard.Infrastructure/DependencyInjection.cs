@@ -38,7 +38,15 @@ namespace JobBoard.Infrastructure
                         maxRetryDelay: TimeSpan.FromSeconds(10),
                         errorNumbersToAdd: null)));
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()
+            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+                {
+                    // Lockout against password guessing: 5 wrong passwords in a row lock the account
+                    // for 15 minutes. Applied by SignInManager.CheckPasswordSignInAsync in IdentityService.
+                    // The lockout columns already exist in AspNetUsers, so no migration is needed.
+                    options.Lockout.MaxFailedAccessAttempts = 5;
+                    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+                    options.Lockout.AllowedForNewUsers = true;
+                })
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             // Repositories
