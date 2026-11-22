@@ -10,6 +10,13 @@
     <Folder Include="Migrations\" />
   </ItemGroup>
 
+  <!-- Identity (UserManager, AddIdentity) and IConfiguration come from the ASP.NET Core shared framework.
+       Infrastructure is the layer that owns those framework concerns, so the reference lives here,
+       not in Application. -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.11" />

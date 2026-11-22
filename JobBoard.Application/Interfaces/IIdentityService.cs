@@ -1,15 +1,15 @@
 ﻿using JobBoard.Application.DTOs;
 using JobBoard.Domain.Enums;
-using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace JobBoard.Application.Interfaces
 {
     public interface IIdentityService
     {
-        public Task<IdentityResult> CreateUser(string Email, string Password, UserRole Role);
-        public Task<LoginResponse> LoginUser(String Email, String Password);
+        // Creates the user AND assigns the role, or neither: if the role can't be assigned the new
+        // user is removed again, so a user without a role never stays in the database.
+        public Task<RegistrationResult> CreateUser(string Email, string Password, UserRole Role);
+
+        // Null when the email/password pair is wrong (or the account has no usable role).
+        public Task<LoginResponse?> LoginUser(String Email, String Password);
     }
 }

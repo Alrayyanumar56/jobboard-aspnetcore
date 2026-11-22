@@ -2,35 +2,49 @@
 
 Check this FIRST when sitting down after any gap of more than a couple days.
 
-## Phase 1 checklist (updated for Web API + Clean Architecture)
+## Phase 1 checklist (updated for Web API + Clean Architecture) — re-verified against the code on 2026-11-22
 - [x] GitHub repo created and pushed
-- [x] Domain model reasoning started in `02-domain-model.md` (open questions partially answered — recheck before continuing)
+- [x] Domain model reasoning in `02-domain-model.md` (decisions 1, 2 and 4 recorded; 3 still open)
 - [x] Solution restructured into four projects: Domain, Application, Infrastructure, Api
 - [x] Project references configured (Api → Application + Infrastructure; Infrastructure → Application + Domain; Application → Domain; Domain → nothing)
-- [x] `.gitignore` corrected and previously-tracked `obj/`/`bin/`/`.vs/` removed from Git index
+- [x] `.gitignore` corrected and previously-tracked `obj/`/`bin/`/`.vs/` removed from Git index (root-level leftovers removed 2026-11-22)
 - [x] `Job` entity created in Domain (public, not internal)
-- [x] `JobType` and `Location` enums created in Domain — **overlap between the two needs resolving (see 02-domain-model.md item 3)**
-- [x] `IJobRepository` interface (Application) — intentionally not created yet; declined an AI-generated version to write it myself
+- [x] `JobType` and `Location` enums created in Domain — **overlap between the two still needs resolving (see 02-domain-model.md item 3)**
+- [x] `IJobRepository` interface (Application)
 - [x] `JobRepository` implementation (Infrastructure)
-- [ ] `ApplicationUser` extended, roles set up (Employer, JobSeeker) — decide where it physically lives (Infrastructure vs shared Identity area)
+- [x] `ApplicationUser` in Infrastructure, roles seeded at startup (Admin, Employer, JobSeeker)
 - [x] `ApplicationDbContext` created, EF Core wired to SQL Server
 - [x] First migration run
-- [x] Registration/login endpoints (JWT-based, not cookie-based — playlist doesn't cover this, research separately)
-- [x] Swagger set up and confirmed working (`/swagger` loads, at least one endpoint visible)
+- [x] Registration/login endpoints (JWT-based)
+- [x] Swagger set up and confirmed working
 - [x] `JobApplication` entity created and reasoned through
 - [x] `/DTOs` in Application, request/response shapes in place
-- [x] Employer: create job posting (via API)
-- [x] Employer: get only own postings
-- [x] Employer: edit/delete own posting
-- [] **Security test passed:** Employer B cannot edit Employer A's job via direct API call
-- [ ] Job Seeker: public browse endpoint (no auth required)
-- [ ] Job Seeker: filter by Job Type and Location
-- [ ] Job Seeker: apply (auth required)
-- [ ] **Duplicate-apply test passed**
-- [ ] Job Seeker: view own applications
-- [ ] Employer: view applicants per job
-- [ ] **Security test passed:** Job Seeker cannot reach Employer-only endpoints
-- [ ] Phase 1 fully working end-to-end via Swagger, committed, pushed
+- [x] Employer: create job posting
+- [x] Employer: get only own postings — `GET /api/Job/mine` (added 2026-11-22; was ticked before it existed)
+- [x] Employer: edit/close own posting (close = soft delete, applications kept)
+- [x] **Security test:** Employer B cannot edit Employer A's job — covered by `OwnershipTests`; re-check manually on the live API
+- [x] Job Seeker: public browse endpoint (no auth required)
+- [x] Job Seeker: filter by Job Type and Location — `GET /api/Job?jobType=&location=` (added 2026-11-22)
+- [x] Job Seeker: apply (auth required)
+- [x] **Duplicate-apply test** — 409, unique index; covered by `OwnershipTests`
+- [x] Job Seeker: view own applications
+- [x] Employer: view applicants per job (email + name from candidate profile)
+- [ ] **Security test:** Job Seeker cannot reach Employer-only endpoints — verify manually on the live API (403)
+- [ ] Phase 1 fully working end-to-end on the deployed API
+
+## Phase 2 / backend finishing
+- [x] Application status workflow with transition rules and history
+- [x] Candidate profile and candidate education
+- [x] Azure deployment (App Service F1 + Azure SQL), all 8 migrations applied
+- [x] Registration validation fixes and real error messages
+- [x] `GET /api/Auth/me`
+- [x] CORS, string enums, ProblemDetails errors, `/health`
+- [x] Startup config validation + SQL retry on failure
+- [x] Unit test project (`JobBoard.Tests`)
+- [ ] Redeploy to Azure and run the full flow on the live URL
+- [ ] Decide: employer/company profile (company name on job cards) — needs a migration
+- [ ] Decide: keep or drop the unused `Admin` role
+- [ ] Out of scope for now: resume upload, email notifications, refresh tokens, pagination
 
 ## Session log
 
@@ -90,3 +104,13 @@ Check this FIRST when sitting down after any gap of more than a couple days.
 - Did: Completed registration, login, and JWT generation. Configured JWT Bearer validation (issuer, audience, signing key, lifetime) with Identity coexisting. Added Swagger Bearer support. Secrets in User Secrets.
 - Tested: valid login → 200 + JWT; protected endpoint without token → 401; with token → 200; token removed → 401.
 - Next: Employer creates job.
+
+### [2026-11-22]
+* Did: Repo cleanup — removed duplicate migration files, old `bin/` and `Properties/` at the repo root, and Office lock files in `docs/`; tidied `.gitignore`.
+* Did: Fixed registration: `Role` is now nullable + `[Required]` + `[EnumDataType]` (omitted role was silently Employer; an undefined value created a user with no role, whose login then crashed). Role assignment failure now removes the user again. Registration errors are returned as a `ValidationProblem` with Identity's messages.
+* Did: Removed `IdentityResult` from the Application layer (`RegistrationResult` instead), so Application no longer references the ASP.NET Core framework.
+* Did: Added `GET /api/Job/mine`, `jobType`/`location` filters on `GET /api/Job`, applicant name in the applicants list, `JobIsClosed` in my applications, and `GET /api/Auth/me`.
+* Did: Startup validation of JWT settings and the connection string (clear error instead of an unexplained 500.30), `EnableRetryOnFailure` for Azure SQL (status-change transaction moved inside the execution strategy), CORS from configuration, string enums everywhere, ProblemDetails for errors, `/health`.
+* Did: Moved DI registrations into `AddApplication()` / `AddInfrastructure()`.
+* Did: Added `JobBoard.Tests` (xUnit): status rules and ownership/duplicate checks against in-memory fake repositories.
+* Next: Build, run `dotnet test`, retest in Swagger, redeploy to Azure, add `Cors__AllowedOrigins__0` once the frontend has a URL.

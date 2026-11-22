@@ -1,6 +1,87 @@
-@JobBoard.Api_HostAddress = http://localhost:5131
+@baseUrl = http://localhost:5131
+# Paste a token from the login response here to call the protected endpoints.
+@token = PASTE_JWT_HERE
 
-GET {{JobBoard.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+### Health check
+GET {{baseUrl}}/health
 
-###
+### Register an employer
+POST {{baseUrl}}/api/Auth/register
+Content-Type: application/json
+
+{
+  "email": "employer@example.com",
+  "password": "TestUser@12345",
+  "role": "Employer"
+}
+
+### Register a job seeker
+POST {{baseUrl}}/api/Auth/register
+Content-Type: application/json
+
+{
+  "email": "seeker@example.com",
+  "password": "TestUser@12345",
+  "role": "JobSeeker"
+}
+
+### Log in
+POST {{baseUrl}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "email": "employer@example.com",
+  "password": "TestUser@12345"
+}
+
+### Who am I (from the token)
+GET {{baseUrl}}/api/Auth/me
+Authorization: Bearer {{token}}
+
+### Public job list, optionally filtered
+GET {{baseUrl}}/api/Job?jobType=FullTime&location=Remote
+
+### One job
+GET {{baseUrl}}/api/Job/1
+
+### Employer: create a job
+POST {{baseUrl}}/api/Job
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Junior .NET Developer",
+  "description": "Build and maintain ASP.NET Core APIs.",
+  "jobType": "FullTime",
+  "jobLocation": "OnSite",
+  "salaryRange": "80k - 120k PKR"
+}
+
+### Employer: my jobs (open and closed)
+GET {{baseUrl}}/api/Job/mine
+Authorization: Bearer {{token}}
+
+### Employer: applicants for one of my jobs
+GET {{baseUrl}}/api/Job/1/applications
+Authorization: Bearer {{token}}
+
+### Employer: move an application forward
+PATCH {{baseUrl}}/api/JobApplication/1/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "UnderReview"
+}
+
+### Job seeker: apply
+POST {{baseUrl}}/api/Job/1/applications
+Authorization: Bearer {{token}}
+
+### Job seeker: my applications
+GET {{baseUrl}}/api/Job/my-applications
+Authorization: Bearer {{token}}
+
+### Job seeker: withdraw
+PATCH {{baseUrl}}/api/JobApplication/1/withdraw
+Authorization: Bearer {{token}}

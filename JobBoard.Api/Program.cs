@@ -1,32 +1,10 @@
-using JobBoard.Application.Interfaces;
-using JobBoard.Application.Jobs.ApplyToJob;
-using JobBoard.Application.Jobs.CloseJob;
-using JobBoard.Application.Jobs.CreateJob;
-using JobBoard.Application.Jobs.GetApplicationHistory;
-using JobBoard.Application.Jobs.GetJobById;
-using JobBoard.Application.Jobs.GetJobApplicants;
-using JobBoard.Application.Jobs.GetJobs;
-using JobBoard.Application.Jobs.GetMyApplications;
-using JobBoard.Application.Jobs.UpdateJob;
-using JobBoard.Application.Services;
+using JobBoard.Application;
+using JobBoard.Infrastructure;
 using JobBoard.Infrastructure.Data;
-using JobBoard.Infrastructure.Repositories;
-using JobBoard.Infrastructure.Services;
-using JobBoard.Application.Jobs.UpdateApplicationStatus;
-using JobBoard.Application.Jobs.WithdrawApplication;
-using JobBoard.Application.Profiles.CreateCandidateProfile;
-using JobBoard.Application.Profiles.GetMyCandidateProfile;
-using JobBoard.Application.Profiles.UpdateCandidateProfile;
-using JobBoard.Application.Education.CreateCandidateEducation;
-using JobBoard.Application.Education.DeleteCandidateEducation;
-using JobBoard.Application.Education.GetMyCandidateEducation;
-using JobBoard.Application.Education.UpdateCandidateEducation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
-using System.Text;
+using System.Text.Json.Serialization;
 
 
 
@@ -34,7 +12,19 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    // Every enum is sent and accepted as text ("FullTime", "Remote", "JobSeeker") instead of 0/1/2,
+    // so the frontend never needs its own number-to-name tables. Numbers are still accepted on input.
+    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
+// Unhandled exceptions and empty error responses become RFC 7807 ProblemDetails JSON,
+// the same shape the controllers already use for 404/409, instead of an HTML error page.
+builder.Services.AddProblemDetails();
+
+// Liveness only: it deliberately does NOT query the database. Azure pings this regularly, and a
+// database check would keep waking the auto-pausing free Azure SQL database and burn its free allowance.
+builder.Services.AddHealthChecks();
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen(options =>
@@ -54,36 +44,31 @@ builder.Services.AddSwaggerGen(options =>
             [new OpenApiSecuritySchemeReference("Bearer", document)] = []
         });
 });
-builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
-options.UseSqlServer(builder.Configuration.GetConnectionString("JobBoardDBConnection")));
-builder.Services.AddScoped<IJobRepository, JobRepository>();
-builder.Services.AddScoped<CreateJobHandler>();
-builder.Services.AddScoped<GetJobsHandler>();
-builder.Services.AddScoped<GetJobByIdHandler>();
-builder.Services.AddScoped<IJobApplicationRepository, JobApplicationRepository>();
-builder.Services.AddScoped<UpdateApplicationStatusHandler>();
-builder.Services.AddScoped<WithdrawApplicationHandler>();
-builder.Services.AddScoped<GetApplicationHistoryHandler>();
-builder.Services.AddScoped<ApplyToJobHandler>();
-builder.Services.AddScoped<GetMyApplicationsHandler>();
-builder.Services.AddScoped<GetJobApplicantsHandler>();
-builder.Services.AddScoped<UpdateJobHandler>();
-builder.Services.AddScoped<CloseJobHandler>();
-builder.Services.AddScoped<ICandidateProfileRepository, CandidateProfileRepository>();
-builder.Services.AddScoped<GetMyCandidateProfileHandler>();
-builder.Services.AddScoped<CreateCandidateProfileHandler>();
-builder.Services.AddScoped<UpdateCandidateProfileHandler>();
-builder.Services.AddScoped<ICandidateEducationRepository, CandidateEducationRepository>();
-builder.Services.AddScoped<CreateCandidateEducationHandler>();
-builder.Services.AddScoped<GetMyCandidateEducationHandler>();
-builder.Services.AddScoped<UpdateCandidateEducationHandler>();
-builder.Services.AddScoped<DeleteCandidateEducationHandler>();
-builder.Services.AddScoped<RoleInitializer>();
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
-builder.Services.AddScoped<IIdentityService, IdentityService>();
-builder.Services.AddScoped<IRegistrationService, RegistrationService>();
-builder.Services.AddScoped<IJWTService, JWTService>();
-builder.Services.AddScoped<ILoginService, LoginService>();
+
+// Each layer registers its own services (see DependencyInjection.cs in Application and Infrastructure).
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
+
+// CORS: which browser origins (the React frontend) may call this API. Configured, not hard-coded:
+// appsettings.Development.json lists the local dev servers, and on Azure the deployed frontend's URL
+// is added as the App Service setting Cors__AllowedOrigins__0. The JWT travels in the Authorization
+// header, not a cookie, so credentials (cookies) are not allowed.
+const string FrontendCorsPolicy = "Frontend";
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(FrontendCorsPolicy, policy => policy
+        .WithOrigins(allowedOrigins)
+        .AllowAnyHeader()
+        .AllowAnyMethod());
+});
+
+// JWT settings are validated HERE, at startup, with a message naming the missing setting. Before,
+// a missing Jwt:SecretKey made Convert.FromBase64String(null) throw a bare ArgumentNullException,
+// which on Azure only shows up as "HTTP 500.30 - app failed to start".
+var jwtIssuer = RequireSetting(builder.Configuration, "Jwt:Issuer");
+var jwtAudience = RequireSetting(builder.Configuration, "Jwt:Audience");
+var jwtSigningKey = ReadSigningKey(RequireSetting(builder.Configuration, "Jwt:SecretKey"));
 
 builder.Services
     .AddAuthentication(options =>
@@ -93,30 +78,43 @@ builder.Services
     })
     .AddJwtBearer(option =>
     {
-        String Issuer = builder.Configuration["Jwt:Issuer"];
-        String Audience = builder.Configuration["Jwt:Audience"];
-        byte[] SecurityKey = Convert.FromBase64String(builder.Configuration["Jwt:SecretKey"]);
-
         option.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = Issuer,
+            ValidIssuer = jwtIssuer,
             ValidateAudience = true,
-            ValidAudience = Audience,
+            ValidAudience = jwtAudience,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(SecurityKey),
+            IssuerSigningKey = new SymmetricSecurityKey(jwtSigningKey),
             ValidateLifetime = true,
         };
     });
 
 var app = builder.Build();
+
+// Make sure the Admin/Employer/JobSeeker roles exist. If the database can't be reached even after
+// the retries configured in AddInfrastructure, log it loudly but keep the app running: the roles
+// normally exist already, and a running app can still answer /health and show the error in its logs
+// instead of the whole site failing with HTTP 500.30.
 using (var scope = app.Services.CreateScope())
 {
-    var roleInitializer = scope.ServiceProvider.GetRequiredService<RoleInitializer>();
-    await roleInitializer.InitializeRolesAsync();
+    try
+    {
+        var roleInitializer = scope.ServiceProvider.GetRequiredService<RoleInitializer>();
+        await roleInitializer.InitializeRolesAsync();
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogCritical(ex, "Role initialization failed at startup. Check the database connection.");
+    }
 }
 
 // Configure the HTTP request pipeline.
+
+// Converts unhandled exceptions into a ProblemDetails 500 (in Development the detailed
+// developer exception page still takes precedence).
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 
 if (app.Environment.IsDevelopment()|| app.Configuration.GetValue<bool>("EnableSwagger"))
 {
@@ -126,11 +124,46 @@ if (app.Environment.IsDevelopment()|| app.Configuration.GetValue<bool>("EnableSw
 }
 
 app.UseHttpsRedirection();
+app.UseCors(FrontendCorsPolicy);
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 app.Run();
+
+static string RequireSetting(IConfiguration configuration, string key)
+{
+    var value = configuration[key];
+    if (string.IsNullOrWhiteSpace(value))
+    {
+        throw new InvalidOperationException(
+            $"Missing configuration value '{key}'. Set it in User Secrets locally, " +
+            $"or as the App Service setting '{key.Replace(":", "__")}' on Azure.");
+    }
+    return value;
+}
+
+static byte[] ReadSigningKey(string base64Key)
+{
+    byte[] key;
+    try
+    {
+        key = Convert.FromBase64String(base64Key);
+    }
+    catch (FormatException)
+    {
+        throw new InvalidOperationException("Jwt:SecretKey must be a Base64 string.");
+    }
+
+    // HMAC-SHA256 needs a key of at least 256 bits; a shorter key would only fail later, at the
+    // first login, when the token is signed.
+    if (key.Length < 32)
+    {
+        throw new InvalidOperationException("Jwt:SecretKey must decode to at least 32 bytes (256 bits) for HS256.");
+    }
+    return key;
+}
 
 
 /* {

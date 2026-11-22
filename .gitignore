@@ -7,5 +7,15 @@ obj/
 .idea/
 *.user
 *.suo
-JobBoard.Api/appsettings.json
-JobBoard.Api/appsettings.json
+
+# Test results
+TestResults/
+
+# Office / LibreOffice lock files (created while a document is open)
+~$*
+.~lock.*
+
+# Local environment files. Secrets live in User Secrets (local) and App Service settings (Azure),
+# never in a tracked file. appsettings.json is tracked on purpose: it holds no secrets.
+.env
+*.env

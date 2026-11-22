@@ -6,7 +6,9 @@ using JobBoard.Application.Jobs.GetJobById;
 using JobBoard.Application.Jobs.GetJobApplicants;
 using JobBoard.Application.Jobs.GetJobs;
 using JobBoard.Application.Jobs.GetMyApplications;
+using JobBoard.Application.Jobs.GetMyJobs;
 using JobBoard.Application.Jobs.UpdateJob;
+using JobBoard.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -27,8 +29,9 @@ namespace JobBoard.Api.Controllers
         private readonly GetJobApplicantsHandler getJobApplicantsHandler;
         private readonly UpdateJobHandler updateJobHandler;
         private readonly CloseJobHandler closeJobHandler;
+        private readonly GetMyJobsHandler getMyJobsHandler;
 
-        public JobController(CreateJobHandler createJobHandler, GetJobsHandler getJobsHandler, GetJobByIdHandler getJobByIdHandler, ApplyToJobHandler applyToJobHandler, GetMyApplicationsHandler getMyApplicationsHandler, GetJobApplicantsHandler getJobApplicantsHandler, UpdateJobHandler updateJobHandler, CloseJobHandler closeJobHandler)
+        public JobController(CreateJobHandler createJobHandler, GetJobsHandler getJobsHandler, GetJobByIdHandler getJobByIdHandler, ApplyToJobHandler applyToJobHandler, GetMyApplicationsHandler getMyApplicationsHandler, GetJobApplicantsHandler getJobApplicantsHandler, UpdateJobHandler updateJobHandler, CloseJobHandler closeJobHandler, GetMyJobsHandler getMyJobsHandler)
         {
             this.createJobHandler = createJobHandler;
             this.getJobsHandler = getJobsHandler;
@@ -38,14 +41,38 @@ namespace JobBoard.Api.Controllers
             this.getJobApplicantsHandler = getJobApplicantsHandler;
             this.updateJobHandler = updateJobHandler;
             this.closeJobHandler = closeJobHandler;
+            this.getMyJobsHandler = getMyJobsHandler;
         }
         // Public browsing (docs/03-requirements.md): the class-level [Authorize] is overridden here.
+        // Optional filters: GET /api/Job?jobType=FullTime&location=Remote. An unknown value
+        // (e.g. jobType=Banana) fails model binding and [ApiController] answers 400.
         [HttpGet]
         [AllowAnonymous]
         [ProducesResponseType(typeof(List<JobResponse>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetJobs()
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetJobs([FromQuery] JobType? jobType, [FromQuery] Location? location)
         {
-            var jobs = await getJobsHandler.Handle();
+            var jobs = await getJobsHandler.Handle(jobType, location);
+            return Ok(jobs);
+        }
+
+        // The calling employer's own jobs, open AND closed, for their dashboard.
+        // "mine" is a fixed segment, so it can't clash with GET {id:int}.
+        [HttpGet("mine")]
+        [Authorize(Roles = "Employer")]
+        [ProducesResponseType(typeof(List<MyJobResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> GetMyJobs()
+        {
+            // Whose jobs to return is decided ONLY by the validated token.
+            var employerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(employerId))
+            {
+                return Unauthorized();
+            }
+
+            var jobs = await getMyJobsHandler.Handle(employerId);
             return Ok(jobs);
         }
 

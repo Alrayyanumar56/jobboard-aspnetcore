@@ -47,9 +47,12 @@ namespace JobBoard.Infrastructure.Repositories
         public async Task<List<JobApplicantResponse>> GetApplicantsByJob(int jobId)
         {
             // One query: join to the Identity users table, but select ONLY the email from it,
-            // so no password hash or other Identity column is ever read.
+            // so no password hash or other Identity column is ever read. The candidate profile is a
+            // LEFT join: an applicant without a profile is still listed, just with no name.
             var query = from a in dbContext.JobApplication
                         join u in dbContext.Users on a.JobSeekerId equals u.Id
+                        join p in dbContext.CandidateProfile on a.JobSeekerId equals p.JobSeekerId into profiles
+                        from p in profiles.DefaultIfEmpty()
                         where a.JobId == jobId
                         orderby a.ApplicationDate descending
                         select new JobApplicantResponse
@@ -57,6 +60,7 @@ namespace JobBoard.Infrastructure.Repositories
                             Id = a.Id,
                             JobId = a.JobId,
                             ApplicantEmail = u.Email ?? string.Empty,
+                            ApplicantName = p != null ? p.FullName : null,
                             ApplicationDate = a.ApplicationDate,
                             Status = a.Status,
                             StatusChangedAt = a.StatusChangedAt
@@ -78,6 +82,7 @@ namespace JobBoard.Infrastructure.Repositories
                             Id = a.Id,
                             JobId = a.JobId,
                             JobTitle = j.Title,
+                            JobIsClosed = j.ClosedAt != null,
                             ApplicationDate = a.ApplicationDate,
                             Status = a.Status,
                             StatusChangedAt = a.StatusChangedAt
@@ -95,35 +100,50 @@ namespace JobBoard.Infrastructure.Repositories
 
         public async Task<bool> TryChangeStatus(int applicationId, ApplicationStatus from, ApplicationStatus to, string changedByUserId, DateTimeOffset changedAt)
         {
-            // The status change and its history row must succeed or fail together, so they share a transaction.
-            await using var transaction = await dbContext.Database.BeginTransactionAsync();
-
-            // Compare-and-swap: the UPDATE only matches while the row is STILL in `from`. If two requests
-            // race, one matches and the other gets 0 rows, so a decision made on stale data is never applied.
-            var rows = await dbContext.JobApplication
-                .Where(a => a.Id == applicationId && a.Status == from)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(a => a.Status, to)
-                    .SetProperty(a => a.StatusChangedAt, changedAt));
-
-            if (rows == 0)
-            {
-                // Leaving without CommitAsync rolls the (empty) transaction back.
-                return false;
-            }
-
-            dbContext.JobApplicationStatusHistory.Add(new JobApplicationStatusHistory
+            var history = new JobApplicationStatusHistory
             {
                 JobApplicationId = applicationId,
                 FromStatus = from,
                 ToStatus = to,
                 ChangedAt = changedAt,
                 ChangedByUserId = changedByUserId
-            });
-            await dbContext.SaveChangesAsync();
+            };
 
-            await transaction.CommitAsync();
-            return true;
+            // The DbContext uses EnableRetryOnFailure (Azure SQL can drop connections or be waking up
+            // from auto-pause). A retrying strategy refuses a transaction we start ourselves, because it
+            // can't replay half of it. So the WHOLE unit of work goes inside ExecuteAsync: if a transient
+            // error happens, the transaction is rolled back and the entire block runs again from the top.
+            var strategy = dbContext.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
+            {
+                // The status change and its history row must succeed or fail together, so they share a transaction.
+                await using var transaction = await dbContext.Database.BeginTransactionAsync();
+
+                // Compare-and-swap: the UPDATE only matches while the row is STILL in `from`. If two requests
+                // race, one matches and the other gets 0 rows, so a decision made on stale data is never applied.
+                var rows = await dbContext.JobApplication
+                    .Where(a => a.Id == applicationId && a.Status == from)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(a => a.Status, to)
+                        .SetProperty(a => a.StatusChangedAt, changedAt));
+
+                if (rows == 0)
+                {
+                    // Leaving without CommitAsync rolls the (empty) transaction back.
+                    return false;
+                }
+
+                // On a retry the history row may already be tracked (Added) from the failed attempt;
+                // adding it a second time would insert it twice.
+                if (dbContext.Entry(history).State == EntityState.Detached)
+                {
+                    dbContext.JobApplicationStatusHistory.Add(history);
+                }
+                await dbContext.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+                return true;
+            });
         }
 
         public async Task<List<ApplicationStatusHistoryResponse>> GetStatusHistory(int applicationId)

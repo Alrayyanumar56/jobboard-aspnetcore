@@ -1,5 +1,7 @@
-﻿using JobBoard.Application.Interfaces;
+﻿using JobBoard.Application.DTOs;
+using JobBoard.Application.Interfaces;
 using JobBoard.Domain.Entities;
+using JobBoard.Domain.Enums;
 using JobBoard.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
@@ -22,12 +24,25 @@ namespace JobBoard.Infrastructure.Repositories
             await dbContext.SaveChangesAsync();
             return job;
         }
-        public async Task<List<Job>> GetAllJobs()
+        public async Task<List<Job>> GetAllJobs(JobType? jobType, Location? location)
         {
             // Public listing: closed jobs are not shown.
-            return await dbContext.Job
+            var query = dbContext.Job
                 .AsNoTracking()
-                .Where(j => j.ClosedAt == null)
+                .Where(j => j.ClosedAt == null);
+
+            // Each filter is only added when it was asked for, so EF Core sends one WHERE clause
+            // containing exactly the conditions in use.
+            if (jobType.HasValue)
+            {
+                query = query.Where(j => j.JobType == jobType.Value);
+            }
+            if (location.HasValue)
+            {
+                query = query.Where(j => j.JobLocation == location.Value);
+            }
+
+            return await query
                 .OrderByDescending(j => j.PostedAt)
                 .ToListAsync();
         }
@@ -36,6 +51,29 @@ namespace JobBoard.Infrastructure.Repositories
             return await dbContext.Job
                 .AsNoTracking()
                 .FirstOrDefaultAsync(j => j.Id == id);
+        }
+
+        public async Task<List<MyJobResponse>> GetJobsByEmployer(string employerId)
+        {
+            // One query: the applicant count is a correlated COUNT subquery, so the applications
+            // themselves are never loaded.
+            return await dbContext.Job
+                .AsNoTracking()
+                .Where(j => j.EmployerId == employerId)
+                .OrderByDescending(j => j.PostedAt)
+                .Select(j => new MyJobResponse
+                {
+                    Id = j.Id,
+                    Title = j.Title,
+                    Description = j.Description,
+                    JobType = j.JobType,
+                    JobLocation = j.JobLocation,
+                    SalaryRange = j.SalaryRange,
+                    PostedAt = j.PostedAt,
+                    ClosedAt = j.ClosedAt,
+                    ApplicationCount = dbContext.JobApplication.Count(a => a.JobId == j.Id)
+                })
+                .ToListAsync();
         }
 
         public async Task<bool> UpdateJob(Job job)

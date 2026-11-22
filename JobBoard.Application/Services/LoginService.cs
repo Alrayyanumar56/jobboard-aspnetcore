@@ -13,7 +13,7 @@ namespace JobBoard.Application.Services
         public LoginService(IIdentityService identityService) {
             this.identityService = identityService;
         }
-        public  Task<LoginResponse> LoginUser(LoginRequest loginRequest)
+        public  Task<LoginResponse?> LoginUser(LoginRequest loginRequest)
         {
             return identityService.LoginUser(loginRequest.Email, loginRequest.Password);
 

@@ -3,4 +3,5 @@
   <Project Path="JobBoard.Application/JobBoard.Application.csproj" />
   <Project Path="JobBoard.Domain/JobBoard.Domain.csproj" />
   <Project Path="JobBoard.Infrastructure/JobBoard.Infrastructure.csproj" />
+  <Project Path="JobBoard.Tests/JobBoard.Tests.csproj" />
 </Solution>

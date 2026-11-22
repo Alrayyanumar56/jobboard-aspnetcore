@@ -25,17 +25,18 @@ Dependency rule to keep saying out loud until it's automatic: **dependencies poi
 
 ## Where things live
 - **Domain**: `Job`, `JobApplication`, enums (`JobType`, etc.), and any domain-only logic that doesn't need external dependencies.
-- **Application**: interfaces like `IJobRepository`, `IJobService`; DTOs for request/response shaping; validation/business rules that orchestrate domain objects.
+- **Application**: interfaces like `IJobRepository`; one handler per use case (`CreateJobHandler`, `UpdateApplicationStatusHandler`, ...) holding the business and ownership rules; DTOs for request/response shaping.
 - **Infrastructure**: `ApplicationDbContext`, EF Core migrations, concrete repository implementations, Identity configuration.
 - **Api**: Controllers (`: ControllerBase`, `[ApiController]`), Swagger setup, `Program.cs`, DI wiring that connects interfaces (Application) to implementations (Infrastructure).
 
 ## Request lifecycle example (walk through this from memory)
 "Employer creates a job posting":
-1. React (or Swagger, for manual testing) sends `POST /api/jobs` with a JSON body.
-2. `JobsController` (Api) receives it, model-binds into a request DTO (not the raw `Job` entity — same over-posting reasoning as before, just DTOs instead of ViewModels now).
-3. Controller checks `ModelState.IsValid`, then calls `IJobService.CreateJob(...)` — an interface defined in Application.
-4. The concrete implementation (Infrastructure) does the ownership assignment (current logged-in user's Id, never trusted from the request body) and persists via `ApplicationDbContext`.
-5. Controller returns `Ok(...)` or `CreatedAtAction(...)` with the created resource — no redirects, this is an API, not a browser flow.
+1. React (or Swagger, for manual testing) sends `POST /api/Job` with a JSON body and `Authorization: Bearer <token>`.
+2. The JWT middleware validates the token; `[Authorize(Roles = "Employer")]` rejects anyone else (401/403).
+3. `JobController` (Api) model-binds the body into `CreateJobCommand` (not the raw `Job` entity — over-posting). `[ApiController]` answers 400 automatically if validation fails.
+4. The controller reads the employer's id from the token (`ClaimTypes.NameIdentifier`) — never from the body — and calls `CreateJobHandler` (Application).
+5. The handler builds the `Job` (owner = that id, `PostedAt` = now) and saves it through `IJobRepository`, implemented by `JobRepository` (Infrastructure) on `ApplicationDbContext`.
+6. The controller returns 201 with a `JobResponse` DTO.
 
 ## Authorization architecture (still the part I most need to get right)
 Same two enforcement points as before, just expressed via API responses instead of redirects:

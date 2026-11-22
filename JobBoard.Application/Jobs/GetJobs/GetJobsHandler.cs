@@ -1,5 +1,6 @@
 ﻿using JobBoard.Application.DTOs;
 using JobBoard.Application.Interfaces;
+using JobBoard.Domain.Enums;
 
 namespace JobBoard.Application.Jobs.GetJobs
 {
@@ -12,9 +13,10 @@ namespace JobBoard.Application.Jobs.GetJobs
             this.jobRepository = jobRepository;
         }
 
-        public async Task<List<JobResponse>> Handle()
+        // Both filters are optional; null means "any".
+        public async Task<List<JobResponse>> Handle(JobType? jobType = null, Location? location = null)
         {
-            var jobs = await jobRepository.GetAllJobs();
+            var jobs = await jobRepository.GetAllJobs(jobType, location);
             return jobs.Select(j => j.ToResponse()).ToList();
         }
     }

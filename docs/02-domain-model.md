@@ -54,19 +54,24 @@ erDiagram
 ## Open design questions (update Decision: lines as resolved)
 
 1. **Employer/JobSeeker as roles on one ApplicationUser table, vs. separate profile tables per role?**
-   - Decision:
+   - Decision: Both, for different things. Roles on the one Identity user table decide *what a user may do*; role-specific *data* lives in separate tables keyed by the user id (`CandidateProfile`, `CandidateEducation`). See decision log 2026-11-14.
 
 2. **Where exactly does the "already applied" duplicate check live (Application layer service vs. database constraint vs. both)?**
-   - Decision:
+   - Decision: Both. `ApplyToJobHandler` checks first for a friendly 409; the unique index on (JobId, JobSeekerId) is the real guarantee when two requests race, and the repository turns that violation into the same 409.
 
 3. **JobType vs Location enum overlap (see note under Job above) — how do these two concepts actually relate?**
    - Decision:
 
 4. **Where does `ApplicationUser` physically live in the Clean Architecture split — Domain, or Infrastructure (since Identity is a framework/infrastructure concern)?**
-   - Decision:
+   - Decision: Infrastructure (`JobBoard.Infrastructure/Data/ApplicationUser.cs`). Domain entities refer to users only by their string id (`EmployerId`, `JobSeekerId`), and since 2026-11-22 the Application layer has no Identity types at all.
 
-## What NOT to model yet (Phase 2+, don't build the columns/tables now)
+## Implemented since this file was first written
+- `JobApplication.Status` + `StatusChangedAt`, with `JobApplicationStatusHistory` recording every change (who, from, to, when). Allowed transitions live in `Domain/Rules/ApplicationStatusRules.cs`.
+- `Job.ClosedAt`: closing a job is a soft delete — hidden from browsing, no new applications, existing applications kept.
+- `CandidateProfile` (one per JobSeeker) and `CandidateEducation` (many per profile).
+
+## What NOT to model yet
 - Resume file storage
-- Application status
 - Notifications
+- Employer/company profile (pending decision — needed for a company name on job cards)
 - Anything from `08-future-vision.md` (payments, AI matching, freelance mode, CV parsing) — that file is explicitly out of scope until Phase 1/2 are done and I've consciously replanned

@@ -1,7 +1,4 @@
-using System.Diagnostics;
 using JobBoard.Application.DTOs;
-using JobBoard.Domain.Entities;
-using Microsoft.AspNetCore.Identity;
 namespace JobBoard.Application.Services;
 using JobBoard.Application.Interfaces;
 
@@ -14,9 +11,11 @@ public class RegistrationService:IRegistrationService
         this.identityService = identityService;
     }
 
-    public async Task<IdentityResult> RegisterUser(RegisterRequest registerRequest)
+    public async Task<RegistrationResult> RegisterUser(RegisterRequest registerRequest)
     {
-        var result = await identityService.CreateUser(registerRequest.Email, registerRequest.Password, registerRequest.Role);
+        // Role is guaranteed non-null and defined here: [Required] + [EnumDataType] on RegisterRequest
+        // are checked by [ApiController] before this method is ever called.
+        var result = await identityService.CreateUser(registerRequest.Email.Trim(), registerRequest.Password, registerRequest.Role!.Value);
         return result;
     }
 }
