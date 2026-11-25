@@ -16,17 +16,19 @@ namespace JobBoard.Tests
         private const string EmployerB = "employer-b";
         private const string SeekerA = "seeker-a";
 
+        private readonly FakeSkillRepository skills = new();
         private readonly FakeJobRepository jobs = new();
         private readonly FakeJobApplicationRepository applications = new();
-        private readonly FakeCandidateProfileRepository profiles = new();
+        private readonly FakeCandidateProfileRepository profiles;
         private readonly FakeCandidateEducationRepository education;
 
         public ApplicantProfileTests()
         {
+            profiles = new FakeCandidateProfileRepository(skills);
             education = new FakeCandidateEducationRepository(profiles);
         }
 
-        private GetApplicantProfileHandler Handler() => new(applications, jobs, profiles, education);
+        private GetApplicantProfileHandler Handler() => new(applications, jobs, profiles, education, skills);
 
         private async Task<int> SeekerAAppliesToEmployerAJob()
         {

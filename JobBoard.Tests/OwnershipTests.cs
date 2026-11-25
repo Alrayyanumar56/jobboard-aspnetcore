@@ -22,6 +22,7 @@ namespace JobBoard.Tests
 
         private readonly FakeJobRepository jobs = new();
         private readonly FakeJobApplicationRepository applications = new();
+        private readonly FakeSkillRepository skills = new();
 
         private async Task<Job> PostJobAsEmployerA()
         {
@@ -41,7 +42,8 @@ namespace JobBoard.Tests
             Title = "Edited title",
             Description = "Edited description",
             JobType = JobType.Contract,
-            JobLocation = Location.Remote
+            JobLocation = Location.Remote,
+            ExperienceLevel = ExperienceLevel.Mid
         };
 
         [Fact]
@@ -49,7 +51,7 @@ namespace JobBoard.Tests
         {
             var job = await PostJobAsEmployerA();
 
-            var result = await new UpdateJobHandler(jobs).Handle(job.Id, ValidUpdate(), EmployerB);
+            var result = await new UpdateJobHandler(jobs, skills).Handle(job.Id, ValidUpdate(), EmployerB);
 
             Assert.Equal(UpdateJobStatus.JobNotFound, result.Status);
             Assert.Equal("Junior .NET Developer", jobs.Jobs.Single().Title);
@@ -60,7 +62,7 @@ namespace JobBoard.Tests
         {
             var job = await PostJobAsEmployerA();
 
-            var result = await new UpdateJobHandler(jobs).Handle(job.Id, ValidUpdate(), EmployerA);
+            var result = await new UpdateJobHandler(jobs, skills).Handle(job.Id, ValidUpdate(), EmployerA);
 
             Assert.Equal(UpdateJobStatus.Updated, result.Status);
             Assert.Equal("Edited title", jobs.Jobs.Single().Title);
@@ -72,7 +74,7 @@ namespace JobBoard.Tests
             var job = await PostJobAsEmployerA();
             await new CloseJobHandler(jobs).Handle(job.Id, EmployerA);
 
-            var result = await new UpdateJobHandler(jobs).Handle(job.Id, ValidUpdate(), EmployerA);
+            var result = await new UpdateJobHandler(jobs, skills).Handle(job.Id, ValidUpdate(), EmployerA);
 
             Assert.Equal(UpdateJobStatus.JobClosed, result.Status);
         }

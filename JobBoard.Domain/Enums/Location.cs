@@ -8,5 +8,7 @@ namespace JobBoard.Domain.Enums
     {
         OnSite,
         Remote,
+        // Added last so OnSite (0) and Remote (1) keep their stored numbers.
+        Hybrid,
     }
 }

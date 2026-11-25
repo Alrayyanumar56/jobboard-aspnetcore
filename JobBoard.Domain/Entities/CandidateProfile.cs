@@ -1,10 +1,11 @@
+using JobBoard.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace JobBoard.Domain.Entities
 {
     // The core profile of one JobSeeker. At most one per JobSeeker: that rule is enforced by a unique
-    // index on JobSeekerId in ApplicationDbContext. Education, skills, experience and projects are
-    // deliberately not part of this entity.
+    // index on JobSeekerId in ApplicationDbContext. Education (CandidateEducation) and skills
+    // (CandidateProfileSkill) live in their own tables.
     public class CandidateProfile
     {
         public int Id { get; set; }
@@ -28,6 +29,14 @@ namespace JobBoard.Domain.Entities
 
         [MaxLength(100)]
         public string? Country { get; set; }
+
+        // Link to the candidate's CV hosted elsewhere (http/https only). No file upload yet.
+        [MaxLength(500)]
+        public string? CvUrl { get; set; }
+
+        public int? YearsOfExperience { get; set; }
+
+        public ExperienceLevel? ExperienceLevel { get; set; }
 
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset UpdatedAt { get; set; }

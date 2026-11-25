@@ -79,9 +79,32 @@ Content-Type: application/json
   "title": "Junior .NET Developer",
   "description": "Build and maintain ASP.NET Core APIs.",
   "jobType": "FullTime",
-  "jobLocation": "OnSite",
-  "salaryRange": "80k - 120k PKR"
+  "jobLocation": "Hybrid",
+  "salaryRange": "80k - 120k PKR",
+  "city": "Lahore",
+  "experienceLevel": "Junior",
+  "applicationDeadline": "2027-01-31T23:59:00+05:00",
+  "skills": ["C#", "ASP.NET Core", "SQL Server"]
 }
+
+### Employer: create my company profile (409 if I already have one)
+POST {{baseUrl}}/api/EmployerProfile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "companyName": "Example Software House",
+  "website": "https://example.com",
+  "about": "Product engineering for local and international clients.",
+  "city": "Lahore"
+}
+
+### Employer: my company profile
+GET {{baseUrl}}/api/EmployerProfile/me
+Authorization: Bearer {{token}}
+
+### Skill autocomplete (public)
+GET {{baseUrl}}/api/Skill?search=net
 
 ### Employer: my jobs (open and closed)
 GET {{baseUrl}}/api/Job/mine
@@ -108,9 +131,30 @@ Content-Type: application/json
   "status": "UnderReview"
 }
 
-### Job seeker: apply
+### Job seeker: apply (no body is also fine; 409 after the application deadline)
 POST {{baseUrl}}/api/Job/1/applications
 Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "coverLetter": "I have two years of ASP.NET Core experience and would love to join your team."
+}
+
+### Job seeker: create my profile with CV link, experience and skills
+POST {{baseUrl}}/api/CandidateProfile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "fullName": "Ayesha Khan",
+  "headline": "Junior .NET Developer",
+  "city": "Lahore",
+  "country": "Pakistan",
+  "cvUrl": "https://example.com/cv/ayesha.pdf",
+  "yearsOfExperience": 2,
+  "experienceLevel": "Junior",
+  "skills": ["C#", "asp.net core", "SQL Server"]
+}
 
 ### Job seeker: my applications
 GET {{baseUrl}}/api/Job/my-applications

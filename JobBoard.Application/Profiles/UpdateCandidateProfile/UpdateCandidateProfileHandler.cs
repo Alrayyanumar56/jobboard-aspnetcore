@@ -1,15 +1,18 @@
 using JobBoard.Application.DTOs;
 using JobBoard.Application.Interfaces;
+using JobBoard.Domain.Rules;
 
 namespace JobBoard.Application.Profiles.UpdateCandidateProfile
 {
     public class UpdateCandidateProfileHandler
     {
         private readonly ICandidateProfileRepository candidateProfileRepository;
+        private readonly ISkillRepository skillRepository;
 
-        public UpdateCandidateProfileHandler(ICandidateProfileRepository candidateProfileRepository)
+        public UpdateCandidateProfileHandler(ICandidateProfileRepository candidateProfileRepository, ISkillRepository skillRepository)
         {
             this.candidateProfileRepository = candidateProfileRepository;
+            this.skillRepository = skillRepository;
         }
 
         // jobSeekerId comes from the authenticated user's JWT (resolved in the controller), never from
@@ -29,14 +32,17 @@ namespace JobBoard.Application.Profiles.UpdateCandidateProfile
             profile.ApplyCommand(command);
             profile.UpdatedAt = DateTimeOffset.UtcNow;
 
+            // Full replacement: the skills in the command become the profile's whole skill list.
+            var skills = await skillRepository.GetOrCreate(SkillNameRules.CleanList(command.Skills));
+
             // The repository's UPDATE is keyed by JobSeekerId too. False means the row vanished
             // after we read it.
-            if (!await candidateProfileRepository.UpdateProfile(profile))
+            if (!await candidateProfileRepository.UpdateProfile(profile, skills.Select(s => s.Id).ToList()))
             {
                 return null;
             }
 
-            return profile.ToResponse();
+            return profile.ToResponse(skills.Select(s => s.Name).Order(StringComparer.OrdinalIgnoreCase).ToList());
         }
     }
 }

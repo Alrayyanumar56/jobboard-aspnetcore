@@ -15,5 +15,18 @@ namespace JobBoard.Application.DTOs
         public string? SalaryRange { get; set; }
         public string EmployerId { get; set; } = string.Empty;
         public DateTimeOffset PostedAt { get; set; }
+        public string? City { get; set; }
+
+        // Null only for jobs created before experience levels existed.
+        public ExperienceLevel? ExperienceLevel { get; set; }
+
+        // Null = no deadline.
+        public DateTimeOffset? ApplicationDeadline { get; set; }
+
+        // From the employer's company profile. Null while they haven't created one.
+        public string? CompanyName { get; set; }
+
+        // Alphabetical. Empty when the job lists no skills.
+        public List<string> Skills { get; set; } = new();
     }
 }

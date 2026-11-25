@@ -6,6 +6,9 @@ namespace JobBoard.Application.DTOs
     {
         public int ApplicationId { get; set; }
 
+        // What the applicant wrote when applying. Null when they sent none.
+        public string? CoverLetter { get; set; }
+
         // Null when the applicant hasn't created a candidate profile yet.
         public CandidateProfileResponse? Profile { get; set; }
 

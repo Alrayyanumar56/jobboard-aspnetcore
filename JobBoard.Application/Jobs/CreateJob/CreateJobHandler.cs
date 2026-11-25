@@ -8,7 +8,7 @@ namespace JobBoard.Application.Jobs.CreateJob
 {
     // Request body for POST /api/Job.
     // Deliberately has NO EmployerId or PostedAt: the server decides both.
-    public class CreateJobCommand
+    public class CreateJobCommand : IValidatableObject
     {
         [Required]
         [StringLength(100)]
@@ -30,5 +30,22 @@ namespace JobBoard.Application.Jobs.CreateJob
 
         [StringLength(100)]
         public string? SalaryRange { get; set; }
+
+        [StringLength(100)]
+        public string? City { get; set; }
+
+        // Required for every new or edited job. [EnumDataType] rejects undefined numbers such as 99.
+        [Required]
+        [EnumDataType(typeof(ExperienceLevel))]
+        public ExperienceLevel? ExperienceLevel { get; set; }
+
+        // Optional; must be in the future when given. Omitted or null means no deadline.
+        public DateTimeOffset? ApplicationDeadline { get; set; }
+
+        // Skill names, e.g. ["C#", "SQL"]. At most 20; blanks and repeats are ignored.
+        public List<string>? Skills { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext) =>
+            JobCommandRules.Validate(ApplicationDeadline, Skills);
     }
 }

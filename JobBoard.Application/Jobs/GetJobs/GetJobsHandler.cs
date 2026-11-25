@@ -12,16 +12,16 @@ namespace JobBoard.Application.Jobs.GetJobs
             this.jobRepository = jobRepository;
         }
 
-        // Public listing: one page of open jobs, newest first.
+        // Public listing: one page of open jobs whose deadline (if any) hasn't passed, newest first.
         public async Task<PagedResult<JobResponse>> Handle(GetJobsQuery query)
         {
             var search = string.IsNullOrWhiteSpace(query.Search) ? null : query.Search.Trim();
 
-            var (jobs, totalCount) = await jobRepository.GetOpenJobsPage(query.JobType, query.Location, search, query.Page, query.PageSize);
+            var (jobs, totalCount) = await jobRepository.GetOpenJobsPage(query.JobType, query.Location, search, query.Page, query.PageSize, DateTimeOffset.UtcNow);
 
             return new PagedResult<JobResponse>
             {
-                Items = jobs.Select(j => j.ToResponse()).ToList(),
+                Items = jobs,
                 TotalCount = totalCount,
                 Page = query.Page,
                 PageSize = query.PageSize

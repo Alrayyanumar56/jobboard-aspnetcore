@@ -23,6 +23,14 @@ namespace JobBoard.Infrastructure.Data
         { get; set; }
         public DbSet<CandidateEducation> CandidateEducation
         { get; set; }
+        public DbSet<EmployerProfile> EmployerProfile
+        { get; set; }
+        public DbSet<Skill> Skill
+        { get; set; }
+        public DbSet<JobSkill> JobSkill
+        { get; set; }
+        public DbSet<CandidateProfileSkill> CandidateProfileSkill
+        { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -74,6 +82,44 @@ namespace JobBoard.Infrastructure.Data
                 entity.ToTable(t => t.HasCheckConstraint(
                     "CK_CandidateEducation_EndDate_NotBeforeStartDate",
                     "[EndDate] IS NULL OR [EndDate] >= [StartDate]"));
+            });
+
+            modelBuilder.Entity<EmployerProfile>(entity =>
+            {
+                // Must match AspNetUsers.Id (nvarchar(450)) so it can be a foreign key and part of an index.
+                entity.Property(p => p.EmployerId).HasMaxLength(450);
+
+                // Required relationship; deleting a user also removes their company profile.
+                entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(p => p.EmployerId);
+
+                // One company profile per Employer, guaranteed by the database itself.
+                entity.HasIndex(p => p.EmployerId).IsUnique();
+            });
+
+            modelBuilder.Entity<Skill>(entity =>
+            {
+                // One row per skill whatever its casing: the database refuses a second "C#".
+                entity.HasIndex(s => s.NormalizedName).IsUnique();
+            });
+
+            modelBuilder.Entity<JobSkill>(entity =>
+            {
+                // The pair is the key, so a job can't list a skill twice. Skill-first lookups ("which
+                // jobs need SQL?", for matching) use the index EF creates on SkillId.
+                entity.HasKey(js => new { js.JobId, js.SkillId });
+
+                // No navigation properties on purpose (same style as the other link/child tables).
+                // Deleting a job removes its links; deleting a skill removes it from every job.
+                entity.HasOne<Job>().WithMany().HasForeignKey(js => js.JobId);
+                entity.HasOne<Skill>().WithMany().HasForeignKey(js => js.SkillId);
+            });
+
+            modelBuilder.Entity<CandidateProfileSkill>(entity =>
+            {
+                entity.HasKey(cs => new { cs.CandidateProfileId, cs.SkillId });
+
+                entity.HasOne<CandidateProfile>().WithMany().HasForeignKey(cs => cs.CandidateProfileId);
+                entity.HasOne<Skill>().WithMany().HasForeignKey(cs => cs.SkillId);
             });
         }
     }

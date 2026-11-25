@@ -54,6 +54,8 @@ namespace JobBoard.Infrastructure
             services.AddScoped<IJobApplicationRepository, JobApplicationRepository>();
             services.AddScoped<ICandidateProfileRepository, CandidateProfileRepository>();
             services.AddScoped<ICandidateEducationRepository, CandidateEducationRepository>();
+            services.AddScoped<IEmployerProfileRepository, EmployerProfileRepository>();
+            services.AddScoped<ISkillRepository, SkillRepository>();
 
             // Implementations of Application interfaces
             services.AddScoped<IIdentityService, IdentityService>();

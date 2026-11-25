@@ -15,9 +15,13 @@ namespace JobBoard.Application.Profiles
             profile.Summary = NullIfBlank(command.Summary);
             profile.City = NullIfBlank(command.City);
             profile.Country = NullIfBlank(command.Country);
+            profile.CvUrl = NullIfBlank(command.CvUrl);
+            profile.YearsOfExperience = command.YearsOfExperience;
+            profile.ExperienceLevel = command.ExperienceLevel;
         }
 
-        public static CandidateProfileResponse ToResponse(this CandidateProfile profile)
+        // skills: the profile's skill names, alphabetical (read separately: they live in their own table).
+        public static CandidateProfileResponse ToResponse(this CandidateProfile profile, List<string> skills)
         {
             return new CandidateProfileResponse
             {
@@ -27,6 +31,10 @@ namespace JobBoard.Application.Profiles
                 Summary = profile.Summary,
                 City = profile.City,
                 Country = profile.Country,
+                CvUrl = profile.CvUrl,
+                YearsOfExperience = profile.YearsOfExperience,
+                ExperienceLevel = profile.ExperienceLevel,
+                Skills = skills,
                 CreatedAt = profile.CreatedAt,
                 UpdatedAt = profile.UpdatedAt
             };

@@ -1,5 +1,8 @@
 using JobBoard.Application.Auth.ChangePassword;
 using JobBoard.Application.Education.CreateCandidateEducation;
+using JobBoard.Application.EmployerProfiles.CreateEmployerProfile;
+using JobBoard.Application.EmployerProfiles.GetMyEmployerProfile;
+using JobBoard.Application.EmployerProfiles.UpdateEmployerProfile;
 using JobBoard.Application.Education.DeleteCandidateEducation;
 using JobBoard.Application.Education.GetMyCandidateEducation;
 using JobBoard.Application.Education.UpdateCandidateEducation;
@@ -21,6 +24,7 @@ using JobBoard.Application.Profiles.CreateCandidateProfile;
 using JobBoard.Application.Profiles.GetMyCandidateProfile;
 using JobBoard.Application.Profiles.UpdateCandidateProfile;
 using JobBoard.Application.Services;
+using JobBoard.Application.Skills.SearchSkills;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JobBoard.Application
@@ -64,6 +68,14 @@ namespace JobBoard.Application
             services.AddScoped<GetMyCandidateEducationHandler>();
             services.AddScoped<UpdateCandidateEducationHandler>();
             services.AddScoped<DeleteCandidateEducationHandler>();
+
+            // Employer (company) profile
+            services.AddScoped<GetMyEmployerProfileHandler>();
+            services.AddScoped<CreateEmployerProfileHandler>();
+            services.AddScoped<UpdateEmployerProfileHandler>();
+
+            // Skills
+            services.AddScoped<SearchSkillsHandler>();
 
             return services;
         }

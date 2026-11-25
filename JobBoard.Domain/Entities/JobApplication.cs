@@ -17,5 +17,9 @@ namespace JobBoard.Domain.Entities
         // IJobApplicationRepository.TryChangeStatus, which also records a JobApplicationStatusHistory row.
         public ApplicationStatus Status { get; set; } = ApplicationStatus.Applied;
         public DateTimeOffset StatusChangedAt { get; set; }
+
+        // Optional text the applicant sends with the application. Visible to the job's employer.
+        [MaxLength(4000)]
+        public string? CoverLetter { get; set; }
     }
 }

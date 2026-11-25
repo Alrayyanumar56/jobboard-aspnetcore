@@ -46,15 +46,19 @@ More detail is in [`docs/`](docs): architecture overview, domain model, requirem
 - Registration errors (duplicate email, weak password) come back as field-level validation errors.
 
 **Employers**
-- Create, edit and close their own jobs. Closing is a soft delete: the job disappears from browsing but its applications are kept.
+- Maintain a company profile (name, website, about, city); the company name is shown on their jobs.
+- Create, edit and close their own jobs, with city, experience level, skills and an optional application deadline (after it, the job leaves the public listing and takes no new applications). Closing is a soft delete: the job disappears from browsing but its applications are kept.
 - See all their jobs with applicant counts, filtered by `open`, `closed` or `all`.
 - See applicants per job, open an applicant's full candidate profile and education, and move each application through the pipeline:
   `Applied → UnderReview → Shortlisted → Interview → Offered → Hired`, or `Rejected` from any open stage. Every change is recorded in a status history.
 
 **Job seekers**
-- Browse open jobs publicly, paged, with keyword search and filters for job type and location.
-- Apply (once per job), see their applications and status, withdraw before the process ends.
-- Maintain a candidate profile and education history.
+- Browse open jobs publicly, paged, with keyword search and filters for job type and location (OnSite, Remote, Hybrid).
+- Apply (once per job, optionally with a cover letter), see their applications and status, withdraw before the process ends.
+- Maintain a candidate profile (CV link, years and level of experience, skills) and education history.
+
+**Skills**
+- One shared, normalized skill vocabulary linked to both jobs and candidate profiles (groundwork for matching). New skills are created when a job or profile names them; `GET /api/Skill?search=` offers autocomplete.
 
 ## API overview
 
@@ -71,7 +75,7 @@ More detail is in [`docs/`](docs): architecture overview, domain model, requirem
 | PUT | `/api/Job/{jobId}` | Employer (owner) | Edit an open job |
 | POST | `/api/Job/{jobId}/close` | Employer (owner) | Close a job |
 | GET | `/api/Job/{jobId}/applications` | Employer (owner) | Applicants for a job |
-| POST | `/api/Job/{jobId}/applications` | Job Seeker | Apply |
+| POST | `/api/Job/{jobId}/applications` | Job Seeker | Apply, optional body `{ coverLetter }` |
 | GET | `/api/Job/my-applications` | Job Seeker | My applications |
 | PATCH | `/api/JobApplication/{id}/status` | Employer (owner) | Move an application forward / reject |
 | PATCH | `/api/JobApplication/{id}/withdraw` | Job Seeker (owner) | Withdraw |
@@ -79,6 +83,8 @@ More detail is in [`docs/`](docs): architecture overview, domain model, requirem
 | GET | `/api/JobApplication/{id}/candidate` | Employer (owner) | Applicant's candidate profile + education |
 | GET / POST / PUT | `/api/CandidateProfile/me`, `/api/CandidateProfile` | Job Seeker | My profile |
 | GET / POST / PUT / DELETE | `/api/CandidateEducation`, `/me`, `/{id}` | Job Seeker | My education records |
+| GET / POST / PUT | `/api/EmployerProfile/me`, `/api/EmployerProfile` | Employer | My company profile |
+| GET | `/api/Skill?search=` | anyone | Skill autocomplete (top 20) |
 
 Ready-to-run requests for every flow are in [`JobBoard.Api/JobBoard.Api.http`](JobBoard.Api/JobBoard.Api.http).
 
@@ -134,5 +140,5 @@ Ready-to-run requests for every flow are in [`JobBoard.Api/JobBoard.Api.http`](J
 - [x] Auth, jobs, applications with status workflow, candidate profile and education
 - [x] Deployed to Azure
 - [ ] React frontend
-- [ ] Employer / company profile
+- [x] Employer / company profile, skills, application deadlines, cover letters
 - [ ] Docker image, CI/CD with GitHub Actions, Application Insights, Azure Key Vault

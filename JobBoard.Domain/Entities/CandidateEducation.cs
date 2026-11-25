@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace JobBoard.Domain.Entities
 {
     // One education record on a candidate's profile. A profile can have many of them.
-    // Skills, experience and projects are deliberately not part of this slice.
+    // Work experience and projects are deliberately not part of this slice.
     public class CandidateEducation
     {
         public int Id { get; set; }

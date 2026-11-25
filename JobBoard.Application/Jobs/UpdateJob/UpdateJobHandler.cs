@@ -1,14 +1,17 @@
 using JobBoard.Application.Interfaces;
+using JobBoard.Domain.Rules;
 
 namespace JobBoard.Application.Jobs.UpdateJob
 {
     public class UpdateJobHandler
     {
         private readonly IJobRepository jobRepository;
+        private readonly ISkillRepository skillRepository;
 
-        public UpdateJobHandler(IJobRepository jobRepository)
+        public UpdateJobHandler(IJobRepository jobRepository, ISkillRepository skillRepository)
         {
             this.jobRepository = jobRepository;
+            this.skillRepository = skillRepository;
         }
 
         // employerId comes from the authenticated user's JWT (resolved in the controller),
@@ -37,15 +40,21 @@ namespace JobBoard.Application.Jobs.UpdateJob
             job.JobType = command.JobType!.Value;
             job.JobLocation = command.JobLocation!.Value;
             job.SalaryRange = string.IsNullOrWhiteSpace(command.SalaryRange) ? null : command.SalaryRange.Trim();
+            job.City = string.IsNullOrWhiteSpace(command.City) ? null : command.City.Trim();
+            job.ExperienceLevel = command.ExperienceLevel!.Value;
+            job.ApplicationDeadline = command.ApplicationDeadline;
+
+            // Full replacement: the skills in the command become the job's whole skill list.
+            var skills = await skillRepository.GetOrCreate(SkillNameRules.CleanList(command.Skills));
 
             // The repository's UPDATE re-checks owner and open status. False here means the job was
             // closed by another request after we read it.
-            if (!await jobRepository.UpdateJob(job))
+            if (!await jobRepository.UpdateJob(job, skills.Select(s => s.Id).ToList()))
             {
                 return UpdateJobResult.JobClosed();
             }
 
-            return UpdateJobResult.Success(job.ToResponse());
+            return UpdateJobResult.Success((await jobRepository.GetJobDetails(jobId, openOnly: false))!);
         }
     }
 }

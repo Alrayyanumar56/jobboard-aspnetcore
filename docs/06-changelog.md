@@ -122,3 +122,12 @@ Check this FIRST when sitting down after any gap of more than a couple days.
 * Did: Rate limiting on login/register/change-password (10/min per IP, 429), Identity lockout (5 failures -> 15 minutes, same 401), `POST /api/Auth/change-password`.
 * Did: Tests for the applicant-profile ownership rules, paging/search, `/mine` status filter and change-password.
 * Next: Retest in Swagger (429 after 10 logins in a minute, lockout after 5 wrong passwords), then batch 2.
+
+### [2026-11-22] — Backend gaps, batch 2 (one migration)
+* Did: `EmployerProfile` (`/api/EmployerProfile`), company name on job responses.
+* Did: Job: `Hybrid` location, `City`, `ExperienceLevel` (required on create/update), `ApplicationDeadline` (hidden from the listing after it, apply returns 409).
+* Did: Optional cover letter on apply, shown to the job owner in `/candidate`.
+* Did: Candidate profile: `CvUrl`, `YearsOfExperience`, `ExperienceLevel`.
+* Did: Normalized `Skill` table with `JobSkill` / `CandidateProfileSkill` links, skills on job and profile commands/responses, `GET /api/Skill?search=`.
+* Did: Tests for skill normalization, deadline rules, skills/company name, cover letter, employer-profile ownership, URL/experience validation.
+* Next: Generate and apply the migration, retest in Swagger, then batch 3 (demo data + seeder).

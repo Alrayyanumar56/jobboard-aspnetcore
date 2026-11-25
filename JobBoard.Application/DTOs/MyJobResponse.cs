@@ -13,6 +13,12 @@ namespace JobBoard.Application.DTOs
         public Location JobLocation { get; set; }
         public string? SalaryRange { get; set; }
         public DateTimeOffset PostedAt { get; set; }
+        public string? City { get; set; }
+        public ExperienceLevel? ExperienceLevel { get; set; }
+        public DateTimeOffset? ApplicationDeadline { get; set; }
+
+        // Alphabetical. Empty when the job lists no skills.
+        public List<string> Skills { get; set; } = new();
 
         // Null while the job is open.
         public DateTimeOffset? ClosedAt { get; set; }

@@ -12,6 +12,7 @@ using JobBoard.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Security.Claims;
 
 namespace JobBoard.Api.Controllers
@@ -116,8 +117,9 @@ namespace JobBoard.Api.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-        public async Task<IActionResult> ApplyToJob(int jobId)
+        public async Task<IActionResult> ApplyToJob(int jobId, [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] ApplyToJobCommand? command)
         {
             // The applicant is identified ONLY by the validated token, never by the request.
             var jobSeekerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -126,7 +128,8 @@ namespace JobBoard.Api.Controllers
                 return Unauthorized();
             }
 
-            var result = await applyToJobHandler.Handle(jobId, jobSeekerId);
+            // The body is optional: no body (as before) means no cover letter.
+            var result = await applyToJobHandler.Handle(jobId, jobSeekerId, command);
             return result.Status switch
             {
                 ApplyToJobStatus.Created => StatusCode(StatusCodes.Status201Created, result.Application),
@@ -135,6 +138,10 @@ namespace JobBoard.Api.Controllers
                     statusCode: StatusCodes.Status409Conflict,
                     title: "Already applied",
                     detail: "You have already applied to this job."),
+                ApplyToJobStatus.DeadlinePassed => Problem(
+                    statusCode: StatusCodes.Status409Conflict,
+                    title: "Application deadline has passed",
+                    detail: "This job no longer accepts applications."),
                 _ => StatusCode(StatusCodes.Status500InternalServerError)
             };
         }

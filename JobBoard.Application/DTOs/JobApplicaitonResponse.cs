@@ -6,5 +6,6 @@
         public int JobId { get; set; }
         public string JobSeekerId { get; set; } = string.Empty;
         public DateTimeOffset ApplicationDate { get; set; }
+        public string? CoverLetter { get; set; }
     }
 }

@@ -11,17 +11,20 @@ namespace JobBoard.Application.Jobs.GetApplicantProfile
         private readonly IJobRepository jobRepository;
         private readonly ICandidateProfileRepository candidateProfileRepository;
         private readonly ICandidateEducationRepository candidateEducationRepository;
+        private readonly ISkillRepository skillRepository;
 
         public GetApplicantProfileHandler(
             IJobApplicationRepository jobApplicationRepository,
             IJobRepository jobRepository,
             ICandidateProfileRepository candidateProfileRepository,
-            ICandidateEducationRepository candidateEducationRepository)
+            ICandidateEducationRepository candidateEducationRepository,
+            ISkillRepository skillRepository)
         {
             this.jobApplicationRepository = jobApplicationRepository;
             this.jobRepository = jobRepository;
             this.candidateProfileRepository = candidateProfileRepository;
             this.candidateEducationRepository = candidateEducationRepository;
+            this.skillRepository = skillRepository;
         }
 
         // employerId comes from the authenticated user's JWT (resolved in the controller), never from
@@ -53,7 +56,10 @@ namespace JobBoard.Application.Jobs.GetApplicantProfile
             return new ApplicantProfileResponse
             {
                 ApplicationId = application.Id,
-                Profile = profile?.ToResponse(),
+                CoverLetter = application.CoverLetter,
+                Profile = profile == null
+                    ? null
+                    : profile.ToResponse(await skillRepository.GetCandidateSkillNames(profile.Id)),
                 Education = education.Select(e => e.ToResponse()).ToList()
             };
         }

@@ -63,7 +63,8 @@ namespace JobBoard.Tests.Fakes
                 JobSeekerId = a.JobSeekerId,
                 ApplicationDate = a.ApplicationDate,
                 Status = a.Status,
-                StatusChangedAt = a.StatusChangedAt
+                StatusChangedAt = a.StatusChangedAt,
+                CoverLetter = a.CoverLetter
             };
             return Task.FromResult(copy);
         }

@@ -60,7 +60,7 @@ erDiagram
    - Decision: Both. `ApplyToJobHandler` checks first for a friendly 409; the unique index on (JobId, JobSeekerId) is the real guarantee when two requests race, and the repository turns that violation into the same 409.
 
 3. **JobType vs Location enum overlap (see note under Job above) — how do these two concepts actually relate?**
-   - Decision:
+   - Decision: They are different things. `JobType` is the contract (FullTime, PartTime, Contract, HourBased); `Location` is the work arrangement (OnSite, Remote, Hybrid). Real geography is a separate free-text `Job.City`. See decision log 2026-11-22.
 
 4. **Where does `ApplicationUser` physically live in the Clean Architecture split — Domain, or Infrastructure (since Identity is a framework/infrastructure concern)?**
    - Decision: Infrastructure (`JobBoard.Infrastructure/Data/ApplicationUser.cs`). Domain entities refer to users only by their string id (`EmployerId`, `JobSeekerId`), and since 2026-11-22 the Application layer has no Identity types at all.
@@ -69,9 +69,23 @@ erDiagram
 - `JobApplication.Status` + `StatusChangedAt`, with `JobApplicationStatusHistory` recording every change (who, from, to, when). Allowed transitions live in `Domain/Rules/ApplicationStatusRules.cs`.
 - `Job.ClosedAt`: closing a job is a soft delete — hidden from browsing, no new applications, existing applications kept.
 - `CandidateProfile` (one per JobSeeker) and `CandidateEducation` (many per profile).
+- `EmployerProfile` (one per Employer): CompanyName (shown on jobs), Website, About, City.
+- `Job`: City, `ExperienceLevel` (Entry/Junior/Mid/Senior/Lead, shared with candidates), `ApplicationDeadline`; `Location` gained Hybrid.
+- `JobApplication.CoverLetter`. `CandidateProfile`: CvUrl, YearsOfExperience, ExperienceLevel.
+- `Skill` (shared vocabulary, unique `NormalizedName`) with link tables `JobSkill (JobId, SkillId)` and `CandidateProfileSkill (CandidateProfileId, SkillId)`: many-to-many, no navigation properties.
+
+```mermaid
+erDiagram
+    APPLICATIONUSER ||--o| EMPLOYERPROFILE : "has (as Employer)"
+    APPLICATIONUSER ||--o| CANDIDATEPROFILE : "has (as JobSeeker)"
+    JOB ||--o{ JOBSKILL : "asks for"
+    SKILL ||--o{ JOBSKILL : "used by"
+    CANDIDATEPROFILE ||--o{ CANDIDATEPROFILESKILL : "has"
+    SKILL ||--o{ CANDIDATEPROFILESKILL : "used by"
+    CANDIDATEPROFILE ||--o{ CANDIDATEEDUCATION : "has"
+```
 
 ## What NOT to model yet
 - Resume file storage
 - Notifications
-- Employer/company profile (pending decision — needed for a company name on job cards)
 - Anything from `08-future-vision.md` (payments, AI matching, freelance mode, CV parsing) — that file is explicitly out of scope until Phase 1/2 are done and I've consciously replanned

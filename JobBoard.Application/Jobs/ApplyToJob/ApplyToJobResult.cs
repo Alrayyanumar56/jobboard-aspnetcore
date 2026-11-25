@@ -6,10 +6,11 @@ namespace JobBoard.Application.Jobs.ApplyToJob
     {
         Created,
         JobNotFound,
-        AlreadyApplied
+        AlreadyApplied,
+        DeadlinePassed
     }
 
-    // The handler can end in three different ways; the controller maps each one to an HTTP status.
+    // The handler can end in four different ways; the controller maps each one to an HTTP status.
     public class ApplyToJobResult
     {
         public ApplyToJobStatus Status { get; private init; }
@@ -23,5 +24,8 @@ namespace JobBoard.Application.Jobs.ApplyToJob
 
         public static ApplyToJobResult AlreadyApplied() =>
             new() { Status = ApplyToJobStatus.AlreadyApplied };
+
+        public static ApplyToJobResult DeadlinePassed() =>
+            new() { Status = ApplyToJobStatus.DeadlinePassed };
     }
 }

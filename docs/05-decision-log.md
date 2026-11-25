@@ -92,6 +92,30 @@ Every time I make a real architectural or design choice, log it here in 3-4 line
 **Why:** Revocation would need a database check (security stamp) on every request. With 1-hour tokens that cost is not worth it yet.
 **Status:** Active
 
+### [2026-11-22] — Skills as one normalized vocabulary shared by jobs and candidates
+**Context:** Skills will feed a matching algorithm, so "C#" on a job and "c#" on a CV must be the same thing.
+**Decision:** A `Skill` table with a unique `NormalizedName` (trimmed, inner spaces collapsed, upper-cased; `Domain/Rules/SkillNameRules`), linked many-to-many through `JobSkill` and `CandidateProfileSkill` (composite primary keys, no navigation properties). Skills are free text: an unknown name creates a row (a race is resolved by the unique index), and `GET /api/Skill?search=` offers autocomplete so clients reuse names. Max 20 per job/profile, 50 characters each. The job/profile row and its skill links are written in one transaction inside the execution strategy.
+**Why:** Normalized ids make matching a join instead of string comparison. A curated list was rejected for now: it needs admin tooling nobody has; free text plus autocomplete keeps duplicates low. Synonyms ("JS" vs "JavaScript") are not handled yet.
+**Status:** Active
+
+### [2026-11-22] — Application deadline hides the job from the listing but not from its own URL
+**Context:** Jobs needed an optional closing date.
+**Decision:** `Job.ApplicationDeadline` (nullable). Past it, the job drops out of `GET /api/Job` (items and total) and applying returns 409 "Application deadline has passed"; `GET /api/Job/{id}` still returns it. A new or edited job must have a future deadline or none.
+**Why:** Seekers who already applied follow links from "my applications" and should still see the job. Unlike closing, a deadline is not the employer archiving the job, so it stays editable (they can extend it).
+**Status:** Active
+
+### [2026-11-22] — Location is the work arrangement; City is separate; ExperienceLevel is shared
+**Context:** Open question 3 in `02-domain-model.md`, and Hybrid jobs.
+**Decision:** `Location` = OnSite / Remote / Hybrid (Hybrid appended so stored numbers don't change). `City` is a free-text column. One `ExperienceLevel` enum (Entry, Junior, Mid, Senior, Lead) is used by both `Job` and `CandidateProfile`; it is nullable in the database for existing jobs but required by the job commands.
+**Why:** Arrangement and geography filter independently. A shared enum lets matching compare a job's level with a candidate's directly.
+**Status:** Active
+
+### [2026-11-22] — Employer profile mirrors the candidate profile; company name on job responses
+**Context:** Job cards needed a company name.
+**Decision:** `EmployerProfile` (one per Employer, unique index, owner from the token) with the same three endpoints as CandidateProfile. Job responses include `CompanyName` via a subquery; it is null when the employer has no profile. Posting a job does not require a profile.
+**Why:** The same shape as the existing profile keeps the API predictable. Not forcing a profile avoids breaking existing employers.
+**Status:** Active
+
 ### [2026-11-22] — CORS origins from configuration; `/health` without a database check
 **Context:** The React frontend runs on a different origin, so the browser blocks requests without CORS. Azure needs something to ping.
 **Decision:** One CORS policy whose origins come from `Cors:AllowedOrigins` (dev servers in `appsettings.Development.json`, the deployed frontend as `Cors__AllowedOrigins__0` on Azure). No credentials, because the JWT is sent in the `Authorization` header. `/health` is liveness only.

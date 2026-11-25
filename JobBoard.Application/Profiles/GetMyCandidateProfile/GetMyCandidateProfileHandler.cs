@@ -6,10 +6,12 @@ namespace JobBoard.Application.Profiles.GetMyCandidateProfile
     public class GetMyCandidateProfileHandler
     {
         private readonly ICandidateProfileRepository candidateProfileRepository;
+        private readonly ISkillRepository skillRepository;
 
-        public GetMyCandidateProfileHandler(ICandidateProfileRepository candidateProfileRepository)
+        public GetMyCandidateProfileHandler(ICandidateProfileRepository candidateProfileRepository, ISkillRepository skillRepository)
         {
             this.candidateProfileRepository = candidateProfileRepository;
+            this.skillRepository = skillRepository;
         }
 
         // jobSeekerId comes from the authenticated user's JWT (resolved in the controller), never from
@@ -18,7 +20,11 @@ namespace JobBoard.Application.Profiles.GetMyCandidateProfile
         public async Task<CandidateProfileResponse?> Handle(string jobSeekerId)
         {
             var profile = await candidateProfileRepository.GetByJobSeekerId(jobSeekerId);
-            return profile?.ToResponse();
+            if (profile == null)
+            {
+                return null;
+            }
+            return profile.ToResponse(await skillRepository.GetCandidateSkillNames(profile.Id));
         }
     }
 }

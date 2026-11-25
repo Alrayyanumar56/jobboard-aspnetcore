@@ -17,8 +17,8 @@ namespace JobBoard.Application.Jobs.ApplyToJob
         }
 
         // jobSeekerId comes from the authenticated user's JWT (resolved in the controller),
-        // never from the request.
-        public async Task<ApplyToJobResult> Handle(int jobId, string jobSeekerId)
+        // never from the request. command is the optional body (cover letter); null means no body.
+        public async Task<ApplyToJobResult> Handle(int jobId, string jobSeekerId, ApplyToJobCommand? command = null)
         {
             var job = await jobRepository.GetJobById(jobId);
             // A closed job no longer exists as far as applicants are concerned.
@@ -27,21 +27,29 @@ namespace JobBoard.Application.Jobs.ApplyToJob
                 return ApplyToJobResult.JobNotFound();
             }
 
+            // Every application starts as Applied, and that moment is also its first status timestamp.
+            var appliedAt = DateTimeOffset.UtcNow;
+
+            // After the deadline the job still exists (it can be viewed), but takes no new applications.
+            if (job.ApplicationDeadline.HasValue && appliedAt >= job.ApplicationDeadline.Value)
+            {
+                return ApplyToJobResult.DeadlinePassed();
+            }
+
             // Friendly early check for the normal duplicate case.
             if (await jobApplicationRepository.HasApplied(jobId, jobSeekerId))
             {
                 return ApplyToJobResult.AlreadyApplied();
             }
 
-            // Every application starts as Applied, and that moment is also its first status timestamp.
-            var appliedAt = DateTimeOffset.UtcNow;
             var application = new JobApplication
             {
                 JobId = jobId,
                 JobSeekerId = jobSeekerId,
                 ApplicationDate = appliedAt,
                 Status = ApplicationStatus.Applied,
-                StatusChangedAt = appliedAt
+                StatusChangedAt = appliedAt,
+                CoverLetter = string.IsNullOrWhiteSpace(command?.CoverLetter) ? null : command.CoverLetter.Trim()
             };
 
             // Two simultaneous requests can both pass the check above. The unique index in the
@@ -57,7 +65,8 @@ namespace JobBoard.Application.Jobs.ApplyToJob
                 Id = application.Id,
                 JobId = application.JobId,
                 JobSeekerId = application.JobSeekerId,
-                ApplicationDate = application.ApplicationDate
+                ApplicationDate = application.ApplicationDate,
+                CoverLetter = application.CoverLetter
             });
         }
     }
